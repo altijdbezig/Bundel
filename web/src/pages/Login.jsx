@@ -1,41 +1,63 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Circles } from '../components/Logo'
 import { IconMicrosoft } from '../components/Icons'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const MIN_PASSWORD = 6
 
 /**
- * Inlogscherm. Er is nog geen auth-backend, dus elke invoer die er goed
- * uitziet opent de demo. Zodra de back-end er is: vervang signIn() hier en
- * in ../auth.jsx door echte aanroepen. De rest kan blijven staan.
+ * Inloggen en aanmelden, allebei in hetzelfde paneel. Het echte werk doet
+ * Supabase Auth via ../auth.jsx. Die geeft een foutcode terug, hier wordt
+ * daar een zin bij gezocht in de taal van de bezoeker.
  */
 export default function Login() {
   const { t } = useI18n()
+  const [mode, setMode] = useState('signIn')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
   const [notice, setNotice] = useState('')
-  const { signIn } = useAuth()
+  const [busy, setBusy] = useState(false)
+  const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
+  const signingUp = mode === 'signUp'
   const target = location.state?.from ?? '/app'
 
-  function enterDemo() {
-    signIn()
-    navigate(target, { replace: true })
+  function switchMode(next) {
+    setMode(next)
+    setErrors({})
+    setNotice('')
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
+    if (busy) return
+
     const next = {}
+    if (signingUp && !name.trim()) next.name = t.login.emptyName
     if (!EMAIL.test(email.trim())) next.email = t.login.invalidEmail
     if (!password) next.password = t.login.emptyPassword
+    else if (signingUp && password.length < MIN_PASSWORD) next.password = t.login.shortPassword
     setErrors(next)
-    if (Object.keys(next).length === 0) enterDemo()
+    if (Object.keys(next).length > 0) return
+
+    setNotice('')
+    setBusy(true)
+    const code = signingUp ? await signUp(email, password, name) : await signIn(email, password)
+    setBusy(false)
+
+    if (code) {
+      setNotice(t.login.errors[code] ?? t.login.errors.unknown)
+      return
+    }
+
+    navigate(target, { replace: true })
   }
 
   return (
@@ -43,13 +65,36 @@ export default function Login() {
       <div className="page auth__inner">
         <div className="auth__form-wrap">
           <div className="stack stack-4 auth__head">
-            <h1 className="title-1">{t.login.title}</h1>
+            <h1 className="title-1">{signingUp ? t.login.signUp : t.login.title}</h1>
             <p className="body measure">{t.login.lead}</p>
           </div>
 
           <p className="notice auth__notice">{t.login.prototypeNotice}</p>
 
-          <button type="button" className="btn btn--secondary btn--block btn--lg auth__sso" onClick={enterDemo}>
+          <div className="auth__modes" role="group">
+            <button
+              type="button"
+              className={`auth__mode ${signingUp ? '' : 'auth__mode--on'}`}
+              aria-pressed={!signingUp}
+              onClick={() => switchMode('signIn')}
+            >
+              {t.login.signIn}
+            </button>
+            <button
+              type="button"
+              className={`auth__mode ${signingUp ? 'auth__mode--on' : ''}`}
+              aria-pressed={signingUp}
+              onClick={() => switchMode('signUp')}
+            >
+              {t.login.signUp}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="btn btn--secondary btn--block btn--lg auth__sso"
+            onClick={() => setNotice(t.login.ssoNotice)}
+          >
             <IconMicrosoft size={17} />
             {t.login.school}
           </button>
@@ -61,6 +106,28 @@ export default function Login() {
           </div>
 
           <form className="stack stack-4" onSubmit={handleSubmit} noValidate>
+            {signingUp && (
+              <div className="field">
+                <label htmlFor="login-name">{t.login.name}</label>
+                <input
+                  id="login-name"
+                  className={`input ${errors.name ? 'input--error' : ''}`}
+                  type="text"
+                  autoComplete="name"
+                  placeholder={t.login.namePlaceholder}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  aria-invalid={errors.name ? 'true' : undefined}
+                  aria-describedby={errors.name ? 'login-name-error' : undefined}
+                />
+                {errors.name && (
+                  <span className="field-error" id="login-name-error">
+                    {errors.name}
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="field">
               <label htmlFor="login-email">{t.login.email}</label>
               <input
@@ -85,15 +152,17 @@ export default function Login() {
             <div className="field">
               <span className="auth__labelRow">
                 <label htmlFor="login-password">{t.login.password}</label>
-                <button type="button" className="meta auth__forgot" onClick={() => setNotice(t.login.forgotNotice)}>
-                  {t.login.forgot}
-                </button>
+                {!signingUp && (
+                  <button type="button" className="meta auth__forgot" onClick={() => setNotice(t.login.forgotNotice)}>
+                    {t.login.forgot}
+                  </button>
+                )}
               </span>
               <input
                 id="login-password"
                 className={`input ${errors.password ? 'input--error' : ''}`}
                 type="password"
-                autoComplete="current-password"
+                autoComplete={signingUp ? 'new-password' : 'current-password'}
                 placeholder={t.login.passwordPlaceholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -107,8 +176,8 @@ export default function Login() {
               )}
             </div>
 
-            <button type="submit" className="btn btn--primary btn--block btn--lg">
-              {t.login.submit}
+            <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
+              {busy ? t.login.busy : signingUp ? t.login.signUp : t.login.submit}
             </button>
 
             {notice && (
@@ -119,8 +188,14 @@ export default function Login() {
           </form>
 
           <p className="meta auth__foot">
-            {t.login.noAccount}{' '}
-            <Link to="/download#wachtlijst">{t.login.joinWaitlist}</Link>
+            {signingUp ? t.login.haveAccount : t.login.noAccount}{' '}
+            <button
+              type="button"
+              className="auth__switch"
+              onClick={() => switchMode(signingUp ? 'signIn' : 'signUp')}
+            >
+              {signingUp ? t.login.signInInstead : t.login.createAccount}
+            </button>
           </p>
         </div>
 
