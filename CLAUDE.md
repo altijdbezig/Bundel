@@ -72,7 +72,8 @@ Bundel/
       ├─ auth.jsx    nep-sessie + RequireAuth
       ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · StartScreen.jsx ·
       │              Dialog.jsx · ScreenHeader.jsx · EmptyState.jsx · LessonDialog.jsx ·
-      │              AssignmentDialog.jsx · GradeDialog.jsx · SearchDialog.jsx ·
+      │              AssignmentDialog.jsx · GradeDialog.jsx · OwnItemDialog.jsx ·
+      │              signal.js · SearchDialog.jsx ·
       │              NotificationsPanel.jsx ·
       │              screens/ (9 schermen, incl. Attendance)
       └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
@@ -280,6 +281,21 @@ cijfers op hun naam en op de tekst van de opmerking.
 De demo staat zo dat Mediatheorie het probleemvak is: een 4.8 als cijfer en 75% aanwezigheid.
 Alleen lessen die al geweest zijn hebben een status, dus de toekomst blijft leeg.
 
+**Prompt 14: eigen roosteritems en het signaal op Vandaag (4 vragen gesteld, 4 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Soorten | Afspraak, werk, studietijd en herinnering. Een herinnering heeft geen eindtijd en krijgt in het raster 30 minuten hoogte. |
+| Toevoegen | Knop bij de weeknavigatie, plus klikken op een lege plek in het raster. Die klik vult dag en tijd alvast in, afgerond op een kwartier. |
+| Uiterlijk | Zelfde blokvorm als een les, met het groen van de bron Eigen als streepje links. |
+| Herhalen | Optioneel wekelijks. Zo'n item verschijnt in alle weken op dezelfde dag en tijd. |
+| Signaal op Vandaag | Ja, een regel bovenaan met maximaal twee vakken en de belangrijkste reden. Staat er niet als er niets is. |
+| Ziekmelden | Nee, aanwezigheid blijft alleen-lezen uit Magister. |
+| Rekenregel aanwezigheid | Geen vaste schoolregel bekend, dus de gekozen regel staat nu zichtbaar op het scherm in plaats van verstopt. |
+
+Eigen items leven in `state.jsx` en verdwijnen bij het herstarten van de demo, net als de rest.
+Bij een echte back-end worden dit de enige gegevens die Bundel zelf bewaart.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -390,3 +406,10 @@ Alleen lessen die al geweest zijn hebben een status, dus de toekomst blijft leeg
   `ATTENDANCE_LIMIT`. `getSubjectSignal()` neemt de afgevinkte opdrachten mee, dus het signaal
   verdwijnt zodra je een verlopen opdracht afvinkt. `AppLayout` splitst nu `NAV` (zijbalk, zeven)
   en `TABS` (onderbalk, zes). Nieuw icoon `IconPresence`.
+- **prompt 14**: eigen items in het rooster en een signaalregel op Vandaag. Nieuw bestand
+  `OwnItemDialog.jsx` (toevoegen, aanpassen, verwijderen) en `signal.js` met `signalLine()`,
+  gedeeld door de lespop-up en Vandaag. `state.jsx` kreeg `ownItems` met toevoegen, wijzigen en
+  verwijderen. `data.js` kreeg `ownItemsFor()` en `getSignals()`, en `getTimeline()` neemt nu
+  eigen items mee. De rendertest ving twee fouten: `toMinutes('08:00')` is 480 en dus waar,
+  waardoor een herinnering zonder eindtijd duur 0 kreeg in plaats van 30 minuten, en het
+  bewerkformulier vulde zich pas in een effect waardoor het venster eerst leeg opende.

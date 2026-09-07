@@ -716,7 +716,7 @@ export function assignmentTerm(dueDate) {
  * Lessen en deadlines van vandaag door elkaar, op volgorde van tijd.
  * Dit is de kern van Bundel: niet gesorteerd op bron, maar op wanneer.
  */
-export function getTimeline(lang) {
+export function getTimeline(lang, ownItems = []) {
   const day = getWeek(lang, CURRENT_WEEK)[TODAY_INDEX]
 
   const lessons = day.lessons.map((l) => ({
@@ -739,7 +739,24 @@ export function getTimeline(lang) {
       past: DEMO_NOW_MINUTES >= toMinutes(a.dueTime ?? '17:00'),
     }))
 
-  return [...lessons, ...deadlines].sort((a, b) => a.at - b.at)
+  const own = ownItems
+    .filter((item) => (item.weekly || item.weekIndex === CURRENT_WEEK) && item.dayIndex === TODAY_INDEX)
+    .map((item) => ({
+      ...item,
+      /* kind wordt 'own' voor de tijdlijn, dus het soort gaat apart mee. */
+      ownKind: item.kind,
+      kind: 'own',
+      key: `o-${item.id}`,
+      at: toMinutes(item.time),
+      start: toMinutes(item.time),
+      finish: item.end ? toMinutes(item.end) : toMinutes(item.time) + 30,
+      past: DEMO_NOW_MINUTES >= (item.end ? toMinutes(item.end) : toMinutes(item.time) + 30),
+      now: item.end
+        ? DEMO_NOW_MINUTES >= toMinutes(item.time) && DEMO_NOW_MINUTES < toMinutes(item.end)
+        : false,
+    }))
+
+  return [...lessons, ...deadlines, ...own].sort((a, b) => a.at - b.at)
 }
 
 /* Gewogen gemiddelde, zoals Magister het rekent. */
@@ -1147,6 +1164,29 @@ export function getSubjectSignal(subjectKey, lang, doneMap = {}) {
   }
 
   return { level: reasons.length >= 2 ? 'high' : reasons.length === 1 ? 'low' : 'none', reasons }
+}
+
+/**
+ * De eigen items die in deze week horen. Een item met `weekly` verschijnt
+ * in elke week op dezelfde dag en tijd.
+ */
+export function ownItemsFor(items, weekIndex) {
+  return (items ?? [])
+    .filter((item) => item.weekly || item.weekIndex === weekIndex)
+    .map((item) => ({
+      ...item,
+      own: true,
+      start: toMinutes(item.time),
+      finish: item.end ? toMinutes(item.end) : toMinutes(item.time) + 30,
+    }))
+}
+
+/** Alle vakken waar iets mee is, voor de regel op Vandaag. */
+export function getSignals(lang, doneMap = {}) {
+  return Object.keys(SUBJECTS)
+    .map((key) => ({ subjectKey: key, subject: pick(SUBJECTS[key], lang), ...getSubjectSignal(key, lang, doneMap) }))
+    .filter((s) => s.reasons.length > 0)
+    .sort((a, b) => b.reasons.length - a.reasons.length)
 }
 
 /** Kleur van een bron, voor stippen en randjes. Nooit als vlak gebruiken. */

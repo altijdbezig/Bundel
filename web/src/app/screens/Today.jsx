@@ -4,27 +4,30 @@ import { fill, useI18n } from '../../i18n'
 import { useAppState } from '../state'
 import EmptyState from '../EmptyState'
 import LessonDialog from '../LessonDialog'
+import { signalLine } from '../signal'
 import GradeDialog from '../GradeDialog'
 import ScreenHeader from '../ScreenHeader'
 import { IconCalendar } from '../../components/Icons'
-import { getGroups, getRecentGrades, getTimeline, getToday } from '../data'
+import { getGroups, getRecentGrades, getSignals, getTimeline, getToday } from '../data'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
 
 export default function Today() {
   const { t, lang } = useI18n()
-  const { done, toggleDone } = useAppState()
+  const { done, toggleDone, ownItems } = useAppState()
   const [openLesson, setOpenLesson] = useState(null)
   const [openGrade, setOpenGrade] = useState(null)
   const c = t.app.today
 
   const today = getToday(lang)
-  const timeline = getTimeline(lang)
+  const timeline = getTimeline(lang, ownItems)
+  const signals = getSignals(lang, done)
   const recent = getRecentGrades(lang)
   const group = getGroups(lang)[0]
 
   const lessonCount = timeline.filter((i) => i.kind === 'lesson').length
   const deadlineCount = timeline.filter((i) => i.kind === 'deadline').length
+  const shown = signals.slice(0, 2)
 
   return (
     <div className="screen">
@@ -32,6 +35,36 @@ export default function Today() {
         title={today.title}
         subtitle={fill(c.summary, { lessons: lessonCount, tasks: deadlineCount })}
       />
+
+      {/* Wat er speelt bij je vakken. Staat er niet als er niets is. */}
+      {shown.length > 0 && (
+        <section className="signal signal--today">
+          <div className="signal__head">
+            <span className="signal__title">
+              {shown.length > 1 ? t.app.signal.todayTitle : t.app.signal.todayTitleOne}
+            </span>
+            <Link to="/app/rooster" className="meta signal__link">
+              {t.app.signal.todayLink}
+            </Link>
+          </div>
+
+          <ul className="signal__list">
+            {shown.map((s) => (
+              <li key={s.subjectKey}>
+                <strong>{s.subject}</strong> · {signalLine(s.reasons[0], t)}
+              </li>
+            ))}
+          </ul>
+
+          {signals.length > shown.length && (
+            <span className="signal__note">
+              {fill(signals.length - shown.length === 1 ? t.app.signal.more : t.app.signal.morePlural, {
+                count: signals.length - shown.length,
+              })}
+            </span>
+          )}
+        </section>
+      )}
 
       {/* ---------- De dag als tijdlijn: lessen en deadlines door elkaar ---------- */}
       <section className="card stack stack-3">
@@ -55,7 +88,21 @@ export default function Today() {
                   <span className={`tl__marker ${isLesson ? '' : 'is-deadline'}`} />
                 </span>
 
-                {isLesson ? (
+                {item.kind === 'own' ? (
+                  <span className="tl__body tl__body--own">
+                    <span className="tl__row">
+                      <span className="tl__titleRow">
+                        <span className="dot dot--sm" style={{ background: 'var(--source-own)' }} />
+                        <span className="tl__title">{item.title}</span>
+                      </span>
+                      {item.place && <span className="meta tl__room">{item.place}</span>}
+                    </span>
+                    <span className="meta tl__sub">
+                      {t.app.own.kinds[item.ownKind] ?? t.app.own.mine}
+                      {item.end ? ` · ${item.time} tot ${item.end}` : ''}
+                    </span>
+                  </span>
+                ) : isLesson ? (
                   <button type="button" className="tl__body" onClick={() => setOpenLesson(item)}>
                     <span className="tl__row">
                       <span className="tl__title">{item.subject}</span>

@@ -50,6 +50,8 @@ export default function Attendance() {
               {fill(c.counts, { late: summary.late, absent: summary.absent })}
               {summary.excused > 0 ? ` · ${fill(c.excusedNote, { count: summary.excused })}` : ''}
             </span>
+
+            <span className="meta att__rule">{c.rule}</span>
           </section>
 
           {/* Per vak */}

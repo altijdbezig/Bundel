@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../i18n'
 import { useAppState } from './state'
 import Dialog, { DialogFacts, DialogSection } from './Dialog'
+import { signalLine } from './signal'
 import {
   getSubjectAttendance,
   getSubjectDetail,
@@ -13,21 +14,6 @@ import {
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
 const rateClass = (rate) => (rate < ATTENDANCE_LIMIT ? 'is-low' : rate === 100 ? 'is-high' : '')
-
-/**
- * Vertaalt de redenen uit getSubjectSignal naar leesbare zinnen.
- * Bundel noemt wat het ziet en laat het oordeel aan de student.
- */
-function signalLine(reason, t) {
-  const r = t.app.signal.reasons
-  if (reason.kind === 'overdue') {
-    return fill(reason.value === 1 ? r.overdue : r.overduePlural, { value: reason.value })
-  }
-  if (reason.kind === 'attendance') {
-    return fill(r.attendance, { value: reason.value, attended: reason.attended, counted: reason.counted })
-  }
-  return fill(r[reason.kind], { value: reason.value })
-}
 
 /**
  * Venster met alles wat bij een les hoort: de les zelf, de opdrachten voor

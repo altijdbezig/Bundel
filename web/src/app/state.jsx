@@ -26,6 +26,9 @@ export function AppStateProvider({ children }) {
   const [syncedAt, setSyncedAt] = useState({})
   const [startScreen, setStartScreen] = useState('/app')
 
+  /* Eigen dingen die de student zelf in het rooster zet. */
+  const [ownItems, setOwnItems] = useState([])
+
   /* Meldingen per soort. De kaartjes in data.js hebben een kind. */
   const [notifyKinds, setNotifyKinds] = useState({
     deadline: true,
@@ -55,6 +58,11 @@ export function AppStateProvider({ children }) {
       }))
 
     const toggleGroupTask = (id) => setGroupTasks((g) => ({ ...g, [id]: !g[id] }))
+
+    const addOwnItem = (item) => setOwnItems((list) => [...list, { ...item, id: `own-${Date.now()}` }])
+    const updateOwnItem = (id, patch) =>
+      setOwnItems((list) => list.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+    const removeOwnItem = (id) => setOwnItems((list) => list.filter((item) => item.id !== id))
 
     const toggleNotifyKind = (kind) => setNotifyKinds((k) => ({ ...k, [kind]: !k[kind] }))
 
@@ -97,6 +105,7 @@ export function AppStateProvider({ children }) {
       setGroupTasks({})
       setSyncedAt({})
       setStartScreen('/app')
+      setOwnItems([])
     }
 
     return {
@@ -126,9 +135,13 @@ export function AppStateProvider({ children }) {
       syncNow,
       startScreen,
       setStartScreen,
+      ownItems,
+      addOwnItem,
+      updateOwnItem,
+      removeOwnItem,
       resetAll,
     }
-  }, [done, sources, sentMessages, readIds, notificationsOn, notifyKinds, groupTasks, syncing, syncedAt, startScreen])
+  }, [done, sources, sentMessages, readIds, notificationsOn, notifyKinds, groupTasks, syncing, syncedAt, startScreen, ownItems])
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>
 }

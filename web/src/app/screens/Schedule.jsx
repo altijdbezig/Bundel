@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { fill, useI18n } from '../../i18n'
-import { IconTasks, IconCalendar, IconChevron } from '../../components/Icons'
+import { IconTasks, IconCalendar, IconChevron, IconBell, IconInbox } from '../../components/Icons'
 import EmptyState from '../EmptyState'
 import LessonDialog from '../LessonDialog'
-import { getWeek, getWeeks, getWeekBounds, sourceColor, CURRENT_WEEK_INDEX, DEMO_NOW_MINUTES } from '../data'
+import OwnItemDialog from '../OwnItemDialog'
+import { useAppState } from '../state'
+import {
+  getWeek,
+  getWeeks,
+  getWeekBounds,
+  ownItemsFor,
+  sourceColor,
+  CURRENT_WEEK_INDEX,
+  DEMO_NOW_MINUTES,
+} from '../data'
 
 /* Hoogte van het raster: pixels per minuut. Een les van 50 min wordt zo 65px,
    net genoeg voor tijd, vak en lokaal zonder dat de tekst uit het blok loopt. */
@@ -16,6 +26,35 @@ const SHORT_LESSON = 55
 
 const toClock = (minutes) =>
   `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
+
+/* Icoon per soort eigen item. */
+const OWN_ICON = {
+  appointment: IconCalendar,
+  work: IconInbox,
+  study: IconTasks,
+  reminder: IconBell,
+}
+
+/** De inhoud van een eigen blok: naam, plek en het soort. */
+function OwnBody({ item, t, compact = false }) {
+  const Ico = OWN_ICON[item.kind] ?? IconCalendar
+  return (
+    <>
+      <span className="block__subject">{item.title}</span>
+      <span className="block__meta">
+        <span className="dot dot--sm" style={{ background: sourceColor('own') }} title={t.app.own.mine} />
+        {item.place || t.app.own.kinds[item.kind]}
+        {!compact && item.place ? ` · ${t.app.own.kinds[item.kind]}` : ''}
+      </span>
+      {item.note && (
+        <span className="block__own">
+          <Ico size={13} />
+          {item.note}
+        </span>
+      )}
+    </>
+  )
+}
 
 /** De inhoud van een lesblok. Gedeeld door het raster en de agenda-lijst. */
 function LessonBody({ lesson, t, compact = false }) {
@@ -51,10 +90,15 @@ export default function Schedule() {
   const initial = Number.isInteger(fromUrl) && weeks[fromUrl] ? fromUrl : CURRENT_WEEK_INDEX
   const [index, setIndex] = useState(initial)
   const [open, setOpen] = useState(null)
+  const [ownDraft, setOwnDraft] = useState(null)
+
+  const { ownItems } = useAppState()
 
   const week = weeks[index]
   const days = getWeek(lang, index)
   const bounds = getWeekBounds()
+  const own = ownItemsFor(ownItems, index)
+  const ownForDay = (dayIndex) => own.filter((item) => item.dayIndex === dayIndex)
 
   const goto = (next) => {
     if (next < 0 || next >= weeks.length) return
@@ -64,7 +108,7 @@ export default function Schedule() {
 
   /* Pijltjestoetsen bladeren, maar niet terwijl de pop-up open staat. */
   useEffect(() => {
-    if (open) return
+    if (open || ownDraft) return
     const onKey = (e) => {
       if (e.target.closest?.('input, textarea')) return
       if (e.key === 'ArrowLeft') goto(index - 1)
@@ -133,12 +177,20 @@ export default function Schedule() {
           )}
 
           {week.past && <span className="badge weeknav__past">{c.past}</span>}
+
+          <button
+            type="button"
+            className="btn btn--primary weeknav__add"
+            onClick={() => setOwnDraft({ weekIndex: index })}
+          >
+            {t.app.own.add}
+          </button>
         </div>
       </header>
 
       {week.note && !week.empty && <p className="notice notice--ok weeknav__note">{week.note}</p>}
 
-      {week.empty ? (
+      {week.empty && own.length === 0 ? (
         <section className="card">
           <EmptyState title={c.emptyWeek} hint={week.note ?? undefined} icon={IconCalendar} />
         </section>
@@ -176,8 +228,39 @@ export default function Schedule() {
                   ))}
               </div>
 
-              {days.map((d) => (
-                <div key={d.date} className={`sched__col ${d.today ? 'is-today' : ''}`}>
+              {days.map((d, dayIndex) => (
+                <div
+                  key={d.date}
+                  className={`sched__col ${d.today ? 'is-today' : ''}`}
+                  onClick={(e) => {
+                    /* Alleen de lege ruimte reageert, blokken vangen hun eigen klik af. */
+                    if (e.target !== e.currentTarget) return
+                    const y = e.clientY - e.currentTarget.getBoundingClientRect().top
+                    const minutes = Math.round((from + y / PX_PER_MINUTE) / 15) * 15
+                    setOwnDraft({
+                      weekIndex: index,
+                      dayIndex,
+                      time: toClock(minutes),
+                      end: toClock(Math.min(minutes + 60, 23 * 60 + 45)),
+                    })
+                  }}
+                >
+                  {ownForDay(dayIndex).map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className="block block--own"
+                      style={{
+                        top: `${offset(item.start)}px`,
+                        height: `${(item.finish - item.start) * PX_PER_MINUTE - 3}px`,
+                      }}
+                      onClick={() => setOwnDraft(item)}
+                    >
+                      <span className="block__time data">{item.time}</span>
+                      <OwnBody item={item} t={t} compact={item.finish - item.start < SHORT_LESSON} />
+                    </button>
+                  ))}
+
                   {d.lessons.map((l) => {
                     const isNow = d.today && week.current && now >= l.start && now < l.finish
                     const short = l.finish - l.start < SHORT_LESSON
@@ -228,9 +311,29 @@ export default function Schedule() {
                   {d.today && <span className="badge badge--ok">{c.today}</span>}
                 </header>
 
-                {d.lessons.length === 0 && <span className="meta week__empty">{c.empty}</span>}
+                {d.lessons.length === 0 && ownForDay(days.indexOf(d)).length === 0 && (
+                  <span className="meta week__empty">{c.empty}</span>
+                )}
 
                 <div className="agenda__list">
+                  {ownForDay(days.indexOf(d)).map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className="agenda__row agenda__row--own"
+                      onClick={() => setOwnDraft(item)}
+                    >
+                      <span className="agenda__times">
+                        <span className="data">{item.time}</span>
+                        {item.end && <span className="data agenda__end">{item.end}</span>}
+                      </span>
+                      <span className="agenda__rail agenda__rail--own" aria-hidden="true" />
+                      <span className="agenda__body">
+                        <OwnBody item={item} t={t} compact />
+                      </span>
+                    </button>
+                  ))}
+
                   {d.lessons.map((l) => {
                     const isNow = d.today && week.current && now >= l.start && now < l.finish
                     return (
@@ -257,11 +360,21 @@ export default function Schedule() {
             ))}
           </div>
 
-          <p className="meta sched__keys">{c.keysHint}</p>
+          <p className="meta sched__keys">
+            {c.keysHint} {t.app.own.hint}
+          </p>
         </>
       )}
 
       <LessonDialog lesson={open?.lesson} day={open?.day} onClose={() => setOpen(null)} />
+
+      <OwnItemDialog
+        open={!!ownDraft}
+        draft={ownDraft}
+        days={days}
+        weekIndex={index}
+        onClose={() => setOwnDraft(null)}
+      />
     </div>
   )
 }

@@ -377,7 +377,7 @@
   padding: 0 2px;
 }
 
-.sched__col { position: relative; border-right: 1px solid var(--border-hair); }
+.sched__col { position: relative; border-right: 1px solid var(--border-hair); cursor: copy; }
 .sched__col:last-child { border-right: none; }
 .sched__col.is-today { background: rgba(14, 124, 102, 0.035); }
 
@@ -1623,3 +1623,48 @@
 .dlg__rateValue.is-high { color: var(--brand-700); }
 .dlg__rateValue.is-low { color: var(--warn-ink); }
 .dlg__rateSide { flex: 1; min-width: 0; }
+
+/* ================================================================
+   Eigen items in het rooster
+   ================================================================ */
+.block--own {
+  border-left-color: var(--source-own);
+  background: var(--brand-50);
+}
+.block--own:hover { border-left-color: var(--brand-700); border-color: var(--brand-200); }
+.block--own .block__subject { color: var(--brand-900); }
+.block__own {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 3px;
+  font-size: 10.5px;
+  color: var(--brand-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.agenda__row--own .agenda__body { color: var(--ink-900); }
+.agenda__rail--own { background: var(--source-own); }
+
+.weeknav__add { height: 34px; padding: 0 14px; font-size: 13px; }
+
+/* Formulier in het venster */
+.ownform { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--sp-3); }
+.ownform__none { padding-top: 11px; }
+.checkline { display: flex; align-items: flex-start; gap: 11px; cursor: pointer; }
+.checkline .task__check { margin-top: 2px; }
+.ownfoot { justify-content: flex-end; gap: var(--sp-2); flex-wrap: wrap; }
+.ownfoot__remove { margin-right: auto; color: var(--err-ink); }
+.ownfoot__remove:hover { background: var(--err-bg); color: var(--err-ink); }
+
+/* Signaalregel op Vandaag */
+.signal--today { gap: 10px; }
+.signal__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.signal__link { color: var(--warn-ink); text-decoration: underline; }
+.signal__link:hover { color: var(--warn-ink); }
+.tl__body--own { cursor: default; }
+.tl__body--own:hover { background: none; }
