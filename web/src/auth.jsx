@@ -17,6 +17,7 @@ function codeFor(error) {
   const message = String(error?.message ?? '').toLowerCase()
   if (message.includes('invalid login')) return 'invalid'
   if (message.includes('already registered') || message.includes('already been registered')) return 'exists'
+  if (message.includes('should be different')) return 'samePassword'
   if (message.includes('password')) return 'weakPassword'
   if (message.includes('email')) return 'invalidEmail'
   if (message.includes('rate limit')) return 'tooMany'
@@ -65,6 +66,22 @@ export function AuthProvider({ children }) {
     return data.session ? null : 'confirmEmail'
   }, [])
 
+  /** Stuurt een herstelmail. De link daarin komt uit op /wachtwoord. */
+  const requestReset = useCallback(async (email) => {
+    if (!configured) return 'notConfigured'
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/wachtwoord`,
+    })
+    return error ? codeFor(error) : null
+  }, [])
+
+  /** Zet een nieuw wachtwoord voor wie via de herstellink binnenkomt. */
+  const updatePassword = useCallback(async (password) => {
+    if (!configured) return 'notConfigured'
+    const { error } = await supabase.auth.updateUser({ password })
+    return error ? codeFor(error) : null
+  }, [])
+
   const signOut = useCallback(async () => {
     if (configured) await supabase.auth.signOut()
     setSession(null)
@@ -79,8 +96,10 @@ export function AuthProvider({ children }) {
       signIn,
       signUp,
       signOut,
+      requestReset,
+      updatePassword,
     }),
-    [session, ready, signIn, signUp, signOut],
+    [session, ready, signIn, signUp, signOut, requestReset, updatePassword],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

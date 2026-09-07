@@ -15,6 +15,8 @@ export const configured = Boolean(url && key)
 
 export const supabase = configured
   ? createClient(url, key, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+      /* detectSessionInUrl staat aan voor de herstellink uit de mail: die brengt
+         het token mee in de URL en supabase-js leest hem daar zelf uit. */
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     })
   : null

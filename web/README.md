@@ -27,6 +27,11 @@ VITE_SUPABASE_URL=https://jouw-project.supabase.co
 VITE_SUPABASE_ANON_KEY=jouw-publieke-sleutel
 ```
 
+Onder Authentication, URL Configuration moeten de adressen staan waar iemand na een
+herstelmail op mag uitkomen. Zonder die regels stuurt Supabase de link naar de Site URL en
+kom je op de verkeerde plek uit. Zet er `http://localhost:5173/**` bij voor lokaal werken en
+het adres van de gepubliceerde site.
+
 De publieke sleutel mag in de browser staan. Wat iemand mag zien wordt niet door de sleutel
 bepaald maar door RLS in de database: elke rij heeft een `user_id` en je ziet alleen je eigen
 rijen. Het schema staat in `supabase/migrations/` in de hoofdmap van de repo.
@@ -77,7 +82,8 @@ web/
    ├─ auth.jsx               Supabase Auth plus RequireAuth
    └─ pages/
       ├─ Home.jsx             /
-      ├─ Login.jsx            /login
+      ├─ Login.jsx            /login (inloggen, aanmelden, wachtwoord vergeten)
+      ├─ NewPassword.jsx      /wachtwoord, waar de herstellink op uitkomt
       ├─ Download.jsx         /download
       ├─ Privacy.jsx          /privacy
       ├─ Terms.jsx            /voorwaarden
@@ -115,7 +121,7 @@ Bewust, dit is de front-end van een prototype:
 | --- | --- | --- |
 | Inloggen (e-mail) | werkt echt, via Supabase Auth | klaar |
 | Account aanmaken | werkt echt, op /login | klaar |
-| Wachtwoord vergeten | knop toont melding | `pages/Login.jsx` → `forgotNotice` |
+| Wachtwoord vergeten | werkt echt, mail met herstellink | klaar |
 | Inloggen (schoolaccount) | knop toont melding | OAuth-provider in Supabase plus `auth__sso` |
 | Wachtlijst | schrijft naar Supabase | klaar |
 | Downloads | knoppen uitgeschakeld | `pages/Download.jsx` → `aria-disabled` vervangen door `href` |
