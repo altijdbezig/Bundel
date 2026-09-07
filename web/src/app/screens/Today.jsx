@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fill, useI18n } from '../../i18n'
 import { useAppState } from '../state'
 import EmptyState from '../EmptyState'
+import LessonDialog from '../LessonDialog'
 import { IconCalendar, IconTasks } from '../../components/Icons'
 import { getAssignments, getGroups, getRecentGrades, getToday } from '../data'
 
 export default function Today() {
   const { t, lang } = useI18n()
   const { done, toggleDone } = useAppState()
+  const [openLesson, setOpenLesson] = useState(null)
   const c = t.app.today
 
   const today = getToday(lang)
@@ -35,12 +38,19 @@ export default function Today() {
 
           <div className="stack">
             {today.lessons.map((l) => (
-              <div key={l.time} className={`lesson ${l.now ? 'is-now' : ''}`}>
-                <span className="lesson__time data">{l.time}</span>
+              <button
+                type="button"
+                key={l.time}
+                className={`lesson ${l.now ? 'is-now' : ''}`}
+                onClick={() => setOpenLesson(l)}
+              >
+                <span className="lesson__time data">
+                  {l.time} - {l.end}
+                </span>
                 <span className="lesson__name">{l.subject}</span>
                 {l.now && <span className="badge badge--ok lesson__now">{c.now}</span>}
                 <span className="lesson__room meta">{l.room}</span>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -113,6 +123,12 @@ export default function Today() {
           </div>
         </section>
       </div>
+
+      <LessonDialog
+        lesson={openLesson}
+        day={{ day: today.title, date: '' }}
+        onClose={() => setOpenLesson(null)}
+      />
     </div>
   )
 }

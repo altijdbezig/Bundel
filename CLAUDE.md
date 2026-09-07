@@ -219,6 +219,21 @@ lessen laten de docent weg), het uurlabel 10:00 botste met de nu-tijd 10:15 (uur
 20 minuten van nu vallen weg), en de nu-streep sneed door blokken van andere dagen (loopt nu
 alleen over de kolom van vandaag).
 
+**Prompt 10: weken bladeren en een lespop-up (8 vragen gesteld, 8 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Weekdata | Vijf weken nepdata: twee terug, deze week, twee vooruit. Week 38 is een toetsweek, week 39 een projectweek zonder lessen. |
+| Bladeren | Pijlknoppen plus een knop deze week, en de pijltjestoetsen links en rechts. |
+| Pop-up | Gecentreerd venster met de les zelf, de opdrachten voor dat vak, de cijfers en de projectgroep. |
+| Verleden | Voorbije weken doffer, zonder nu-streep, met een badge voorbij. |
+| Deadlines | Verspreid over vier van de vijf weken, zodat de markering overal iets doet. |
+| Vandaag | Lessen daar zijn ook klikbaar en openen dezelfde pop-up. |
+| Lege week | Raster verdwijnt, lege staat met de reden erbij. |
+
+De gekozen week staat in de URL als `?week=N`. Zoekresultaten voor een les linken daarnaartoe,
+anders opent het rooster op de verkeerde week.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -299,3 +314,13 @@ alleen over de kolom van vandaag).
 - **prompt 9**: drie visuele fouten in het rooster gefixt na een screenshot: te lage blokken,
   botsende tijdlabels en een nu-streep die door andere dagen sneed. Dagkop compacter: datum en
   de badge vandaag staan nu op een regel.
+- **prompt 10**: rooster uitgebreid met vijf weken en een lespop-up. `WEEK` werd `WEEKS` met
+  vijf weken; `getWeek(lang, index)`, `getWeeks(lang)` en `CURRENT_WEEK_INDEX` erbij.
+  `getWeekBounds()` kijkt nu over alle weken, zodat de rasterhoogte niet verspringt bij
+  bladeren. Nieuwe `getSubjectDetail()` levert de inhoud van de pop-up. Vijf opdrachten
+  toegevoegd met deadlines in andere weken, en `getAssignments()` sorteert nu op datum.
+  Nieuw bestand `LessonDialog.jsx`, gedeeld door Rooster en Vandaag.
+  Drie fouten die de rendertest ving en die zonder test onopgemerkt waren gebleven:
+  `getAssignments()` gaf de vaksleutel niet terug waardoor de pop-up nooit opdrachten toonde,
+  `Number(params.get('week'))` werd 0 zonder parameter waardoor het rooster op week 35 opende,
+  en twee deadlines vielen niet op een lesdag.

@@ -98,63 +98,145 @@ export function toMinutes(time) {
 
 // ---------------------------------------------------------------- rooster
 
-const TODAY_LESSONS = [
-  { time: '08:30 - 09:20', subject: 'theory', room: 'B1.04', now: false },
-  { time: '09:30 - 11:00', subject: 'ixd', room: 'A2.11', now: true },
-  { time: '11:15 - 12:45', subject: 'concepting', room: 'A2.11', now: false },
-  { time: '13:30 - 15:30', subject: 'project', room: 'Studio 3', now: false },
+/* Dagnamen staan een keer, de weken verwijzen ernaar op volgorde. */
+const DAY_NAMES = [
+  { day: t('Maandag', 'Monday'), short: t('ma', 'Mon') },
+  { day: t('Dinsdag', 'Tuesday'), short: t('di', 'Tue') },
+  { day: t('Woensdag', 'Wednesday'), short: t('wo', 'Wed') },
+  { day: t('Donderdag', 'Thursday'), short: t('do', 'Thu') },
+  { day: t('Vrijdag', 'Friday'), short: t('vr', 'Fri') },
 ]
 
-const WEEK = [
+/* Welke dag van de week "vandaag" is in de demo. 0 is maandag. */
+const TODAY_INDEX = 0
+
+/* De demo loopt over vijf weken. Index 2 is de week waar je in zit. */
+const CURRENT_WEEK = 2
+
+const WEEKS = [
   {
-    day: t('Maandag', 'Monday'),
-    short: t('ma', 'Mon'),
-    date: '07/09',
-    today: true,
-    lessons: [
-      { time: '08:30', end: '09:20', subject: 'theory', room: 'B1.04' },
-      { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
-      { time: '11:15', end: '12:45', subject: 'concepting', room: 'A2.11' },
-      { time: '13:30', end: '15:30', subject: 'project', room: 'Studio 3' },
+    number: 35,
+    range: t('24 tot 28 augustus', '24 to 28 August'),
+    days: [
+      {
+        date: '24/08',
+        lessons: [
+          { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+          { time: '11:15', end: '12:45', subject: 'theory', room: 'B1.04' },
+        ],
+      },
+      { date: '25/08', lessons: [{ time: '09:30', end: '11:00', subject: 'design', room: 'A1.02' }] },
+      { date: '26/08', lessons: [{ time: '08:30', end: '12:00', subject: 'project', room: 'Studio 3' }] },
+      {
+        date: '27/08',
+        lessons: [
+          { time: '09:30', end: '11:00', subject: 'concepting', room: 'A2.11' },
+          { time: '11:15', end: '12:45', subject: 'english', room: 'C0.07' },
+        ],
+      },
+      { date: '28/08', lessons: [{ time: '10:00', end: '12:00', subject: 'design', room: 'A1.02' }] },
     ],
   },
   {
-    day: t('Dinsdag', 'Tuesday'),
-    short: t('di', 'Tue'),
-    date: '08/09',
-    today: false,
-    lessons: [
-      { time: '09:30', end: '11:00', subject: 'design', room: 'A1.02' },
-      { time: '11:15', end: '12:45', subject: 'english', room: 'C0.07' },
+    number: 36,
+    range: t('31 augustus tot 4 september', '31 August to 4 September'),
+    days: [
+      {
+        date: '31/08',
+        lessons: [
+          { time: '08:30', end: '09:20', subject: 'theory', room: 'B1.04' },
+          { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+          { time: '11:15', end: '12:45', subject: 'concepting', room: 'A2.11' },
+        ],
+      },
+      {
+        date: '01/09',
+        lessons: [
+          { time: '09:30', end: '11:00', subject: 'design', room: 'A1.02' },
+          { time: '11:15', end: '12:45', subject: 'english', room: 'C0.07' },
+        ],
+      },
+      {
+        date: '02/09',
+        lessons: [
+          { time: '08:30', end: '12:00', subject: 'project', room: 'Studio 3' },
+          { time: '13:30', end: '14:30', subject: 'career', room: 'B0.11' },
+        ],
+      },
+      {
+        date: '03/09',
+        lessons: [
+          { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+          { time: '11:15', end: '12:45', subject: 'theory', room: 'B1.04' },
+        ],
+      },
+      { date: '04/09', lessons: [{ time: '10:00', end: '12:00', subject: 'design', room: 'A1.02' }] },
     ],
   },
   {
-    day: t('Woensdag', 'Wednesday'),
-    short: t('wo', 'Wed'),
-    date: '09/09',
-    today: false,
-    lessons: [
-      { time: '08:30', end: '12:00', subject: 'project', room: 'Studio 3' },
-      { time: '13:30', end: '14:30', subject: 'career', room: 'B0.11' },
+    number: 37,
+    range: t('7 tot 11 september', '7 to 11 September'),
+    days: [
+      {
+        date: '07/09',
+        lessons: [
+          { time: '08:30', end: '09:20', subject: 'theory', room: 'B1.04' },
+          { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+          { time: '11:15', end: '12:45', subject: 'concepting', room: 'A2.11' },
+          { time: '13:30', end: '15:30', subject: 'project', room: 'Studio 3' },
+        ],
+      },
+      {
+        date: '08/09',
+        lessons: [
+          { time: '09:30', end: '11:00', subject: 'design', room: 'A1.02' },
+          { time: '11:15', end: '12:45', subject: 'english', room: 'C0.07' },
+        ],
+      },
+      {
+        date: '09/09',
+        lessons: [
+          { time: '08:30', end: '12:00', subject: 'project', room: 'Studio 3' },
+          { time: '13:30', end: '14:30', subject: 'career', room: 'B0.11' },
+        ],
+      },
+      {
+        date: '10/09',
+        lessons: [
+          { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+          { time: '11:15', end: '12:45', subject: 'theory', room: 'B1.04' },
+          { time: '14:00', end: '16:00', subject: 'project', room: 'Studio 3' },
+        ],
+      },
+      { date: '11/09', lessons: [{ time: '10:00', end: '12:00', subject: 'design', room: 'A1.02' }] },
     ],
   },
   {
-    day: t('Donderdag', 'Thursday'),
-    short: t('do', 'Thu'),
-    date: '10/09',
-    today: false,
-    lessons: [
-      { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
-      { time: '11:15', end: '12:45', subject: 'theory', room: 'B1.04' },
-      { time: '14:00', end: '16:00', subject: 'project', room: 'Studio 3' },
+    number: 38,
+    range: t('14 tot 18 september', '14 to 18 September'),
+    note: t('Toetsweek. Minder lessen, langere blokken.', 'Test week. Fewer classes, longer blocks.'),
+    days: [
+      { date: '14/09', lessons: [{ time: '09:00', end: '11:00', subject: 'theory', room: 'Aula' }] },
+      { date: '15/09', lessons: [{ time: '09:00', end: '11:00', subject: 'design', room: 'Aula' }] },
+      { date: '16/09', lessons: [] },
+      { date: '17/09', lessons: [{ time: '13:00', end: '15:00', subject: 'ixd', room: 'A2.11' }] },
+      { date: '18/09', lessons: [{ time: '09:00', end: '11:00', subject: 'english', room: 'Aula' }] },
     ],
   },
   {
-    day: t('Vrijdag', 'Friday'),
-    short: t('vr', 'Fri'),
-    date: '11/09',
-    today: false,
-    lessons: [{ time: '10:00', end: '12:00', subject: 'design', room: 'A1.02' }],
+    number: 39,
+    range: t('21 tot 25 september', '21 to 25 September'),
+    note: t(
+      'Projectweek. Geen ingeroosterde lessen, je werkt aan je project.',
+      'Project week. No scheduled classes, you work on your project.',
+    ),
+    days: [
+      { date: '21/09', lessons: [] },
+      { date: '22/09', lessons: [] },
+      { date: '23/09', lessons: [] },
+      { date: '24/09', lessons: [] },
+      { date: '25/09', lessons: [] },
+    ],
   },
 ]
 
@@ -207,12 +289,57 @@ const ASSIGNMENTS = [
     urgent: false,
   },
   {
+    id: 't7',
+    title: t('Onderzoek doelgroep starten', 'Start audience research'),
+    subject: 'concepting',
+    source: 'canvas',
+    due: t('do 27 aug', 'Thu 27 Aug'),
+    dueDate: '27/08',
+    urgent: false,
+  },
+  {
+    id: 't8',
+    title: t('Kleurstudie inleveren', 'Hand in colour study'),
+    subject: 'ixd',
+    source: 'canvas',
+    due: t('do 3 sep', 'Thu 3 Sep'),
+    dueDate: '03/09',
+    urgent: false,
+  },
+  {
+    id: 't9',
+    title: t('Toets mediatheorie', 'Media theory test'),
+    subject: 'theory',
+    source: 'magister',
+    due: t('ma 14 sep', 'Mon 14 Sep'),
+    dueDate: '14/09',
+    urgent: false,
+  },
+  {
+    id: 't10',
+    title: t('Eindconcept presenteren', 'Present the final concept'),
+    subject: 'ixd',
+    source: 'teams',
+    due: t('do 17 sep', 'Thu 17 Sep'),
+    dueDate: '17/09',
+    urgent: false,
+  },
+  {
+    id: 't11',
+    title: t('Projectverslag inleveren', 'Hand in the project report'),
+    subject: 'project',
+    source: 'canvas',
+    due: t('wo 23 sep', 'Wed 23 Sep'),
+    dueDate: '23/09',
+    urgent: false,
+  },
+  {
     id: 't6',
     title: t('Planning inleveren', 'Hand in planning'),
     subject: 'career',
     source: 'canvas',
     due: t('vr 4 sep', 'Fri 4 Sep'),
-    dueDate: null,
+    dueDate: '04/09',
     urgent: false,
   },
 ]
@@ -380,19 +507,41 @@ export function getStudentCourse(lang) {
   return pick(getStudent().course, lang)
 }
 
+export const CURRENT_WEEK_INDEX = CURRENT_WEEK
+
+/** Overzicht van de weken, voor de bladerknoppen. */
+export function getWeeks(lang) {
+  return WEEKS.map((w, index) => ({
+    index,
+    number: w.number,
+    range: pick(w.range, lang),
+    note: w.note ? pick(w.note, lang) : null,
+    empty: w.days.every((d) => d.lessons.length === 0),
+    current: index === CURRENT_WEEK,
+    past: index < CURRENT_WEEK,
+  }))
+}
+
 export function getToday(lang) {
+  const day = getWeek(lang, CURRENT_WEEK)[TODAY_INDEX]
   return {
     label: lang === 'en' ? 'Mon 7 Sep' : 'Ma 7 sep',
     title: lang === 'en' ? 'Monday 7 September' : 'Maandag 7 september',
-    lessons: TODAY_LESSONS.map((l) => ({ ...l, subject: pick(SUBJECTS[l.subject], lang) })),
+    lessons: day.lessons.map((l) => ({
+      ...l,
+      now: DEMO_NOW_MINUTES >= l.start && DEMO_NOW_MINUTES < l.finish,
+    })),
   }
 }
 
-export function getWeek(lang) {
-  return WEEK.map((d) => ({
-    ...d,
-    day: pick(d.day, lang),
-    short: pick(d.short, lang),
+export function getWeek(lang, index = CURRENT_WEEK) {
+  const week = WEEKS[index] ?? WEEKS[CURRENT_WEEK]
+
+  return week.days.map((d, dayIndex) => ({
+    date: d.date,
+    day: pick(DAY_NAMES[dayIndex].day, lang),
+    short: pick(DAY_NAMES[dayIndex].short, lang),
+    today: index === CURRENT_WEEK && dayIndex === TODAY_INDEX,
     lessons: d.lessons.map((l) => ({
       ...l,
       subjectKey: l.subject,
@@ -406,9 +555,12 @@ export function getWeek(lang) {
   }))
 }
 
-/** Vroegste begintijd en laatste eindtijd van de week, in minuten. */
+/**
+ * Vroegste begintijd en laatste eindtijd over alle weken. Het raster houdt
+ * daarmee dezelfde hoogte terwijl je bladert, zodat er niets verspringt.
+ */
 export function getWeekBounds() {
-  const all = WEEK.flatMap((d) => d.lessons)
+  const all = WEEKS.flatMap((w) => w.days.flatMap((d) => d.lessons))
   if (all.length === 0) return { from: 8 * 60, to: 16 * 60 }
   return {
     from: Math.min(...all.map((l) => toMinutes(l.time))),
@@ -416,10 +568,36 @@ export function getWeekBounds() {
   }
 }
 
+/** Alles wat bij een vak hoort, voor de pop-up als je op een les klikt. */
+export function getSubjectDetail(subjectKey, lang) {
+  const grade = GRADES.find((g) => g.subject === subjectKey)
+  const group = GROUPS.find((g) => g.subject === subjectKey)
+
+  return {
+    assignments: getAssignments(lang).filter((a) => a.subjectKey === subjectKey),
+    grade: grade
+      ? {
+          marks: grade.marks,
+          last: pick(grade.last, lang),
+          average: Math.round((grade.marks.reduce((a, b) => a + b, 0) / grade.marks.length) * 10) / 10,
+        }
+      : null,
+    group: group ? { id: group.id, name: pick(group.name, lang), members: group.members } : null,
+  }
+}
+
+/* 'DD/MM' naar een getal, zodat opdrachten op datum kunnen staan. */
+const dateKey = (value) => {
+  if (!value) return Number.MAX_SAFE_INTEGER
+  const [day, month] = value.split('/').map(Number)
+  return month * 100 + day
+}
+
 export function getAssignments(lang) {
-  return ASSIGNMENTS.map((a) => ({
+  return [...ASSIGNMENTS].sort((a, b) => dateKey(a.dueDate) - dateKey(b.dueDate)).map((a) => ({
     ...a,
     title: pick(a.title, lang),
+    subjectKey: a.subject,
     subject: pick(SUBJECTS[a.subject], lang),
     due: pick(a.due, lang),
     sourceName: pick(SOURCES[a.source].name, lang),
@@ -509,19 +687,22 @@ export function search(query, lang) {
     }
   })
 
-  getWeek(lang).forEach((d) => {
-    d.lessons.forEach((l) => {
-      if (hit(l.subject) || hit(l.room)) {
-        results.push({
-          id: `l-${d.date}-${l.time}-${l.subject}`,
-          type: 'lesson',
-          title: l.subject,
-          meta: `${d.day} ${l.time} · ${l.room}`,
-          color: SOURCES.magister.color,
-          sourceName: pick(SOURCES.magister.name, lang),
-          to: '/app/rooster',
-        })
-      }
+  WEEKS.forEach((_, weekIndex) => {
+    getWeek(lang, weekIndex).forEach((d) => {
+      d.lessons.forEach((l) => {
+        if (hit(l.subject) || hit(l.room)) {
+          results.push({
+            id: `l-${d.date}-${l.time}-${l.subject}`,
+            type: 'lesson',
+            title: l.subject,
+            meta: `${d.day} ${d.date} · ${l.time} · ${l.room}`,
+            color: SOURCES.magister.color,
+            sourceName: pick(SOURCES.magister.name, lang),
+            /* Neem de week mee, anders open je het rooster op de verkeerde week. */
+            to: `/app/rooster?week=${weekIndex}`,
+          })
+        }
+      })
     })
   })
 
