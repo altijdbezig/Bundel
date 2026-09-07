@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import NewPassword from './pages/NewPassword'
 import Download from './pages/Download'
 import Privacy from './pages/Privacy'
 import About from './pages/About'
@@ -30,6 +31,7 @@ const TITLES = {
     '/privacy': 'Privacy · Bundel',
     '/over': 'Over Bundel',
     '/voorwaarden': 'Voorwaarden · Bundel',
+    '/wachtwoord': 'Nieuw wachtwoord · Bundel',
     '/app': 'Vandaag · Bundel',
     '/app/opdrachten': 'Opdrachten · Bundel',
     '/app/rooster': 'Rooster · Bundel',
@@ -46,6 +48,7 @@ const TITLES = {
     '/privacy': 'Privacy · Bundel',
     '/over': 'About Bundel',
     '/voorwaarden': 'Terms · Bundel',
+    '/wachtwoord': 'New password · Bundel',
     '/app': 'Today · Bundel',
     '/app/opdrachten': 'Assignments · Bundel',
     '/app/rooster': 'Timetable · Bundel',
@@ -113,6 +116,7 @@ export default function App() {
         <Route element={<SiteLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/wachtwoord" element={<NewPassword />} />
           <Route path="/download" element={<Download />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/over" element={<About />} />

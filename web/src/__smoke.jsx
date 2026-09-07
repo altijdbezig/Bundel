@@ -16,6 +16,7 @@ import Settings from './app/screens/Settings'
 import Onboarding from './app/screens/Onboarding'
 import Home from './pages/Home'
 import LoginPage from './pages/Login'
+import NewPassword from './pages/NewPassword'
 import Download from './pages/Download'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
@@ -235,6 +236,7 @@ async function main() {
     </I18nProvider>,
   )
   check('inloggen biedt aanmelden aan', login.includes('Account aanmaken'))
+  check('inloggen biedt wachtwoord vergeten aan', login.includes('Wachtwoord vergeten?'))
 
   const pages = [
     ['Home', Home],
@@ -243,6 +245,7 @@ async function main() {
     ['Voorwaarden', Terms],
     ['Over', About],
     ['404', NotFound],
+    ['Nieuw wachtwoord', NewPassword],
   ]
 
   pages.forEach(([name, Page]) => {

@@ -338,7 +338,21 @@ Wat nu echt bewaard blijft: afgevinkte opdrachten, groepstaken, gelezen meldinge
 berichten, gekoppelde bronnen, eigen roosteritems, taal- en meldingsvoorkeuren en het
 startscherm. "Opnieuw beginnen" onder Instellingen wist alles en zet de demodata terug.
 
-**Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
+**Prompt 17: wachtwoord vergeten (3 vragen gesteld, 3 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Vorm | Derde stand in hetzelfde paneel op `/login`. Geen aparte pagina voor het aanvragen. |
+| Route | `/wachtwoord`, waar de link uit de mail op uitkomt. Past bij de andere Nederlandse routes. |
+| Daarna | Terug naar `/login` met een melding, dus je logt zelf nog een keer in met het nieuwe wachtwoord. |
+| Eigen SMTP | Nog niet. De standaardafzender van Supabase is voorlopig genoeg. |
+| Microsoft-account | Nog niet. |
+
+De herstellink brengt een token mee in de URL, dus `detectSessionInUrl` staat nu aan in
+`src/supabase.js`. Zonder sessie op `/wachtwoord` toont de pagina dat de link verlopen is.
+Na het opslaan logt de app je uit, want anders zou je met de oude sessie doorlopen.
+
+**Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
 **Home-secties:** hero + app-preview, bronnenstrip, probleem, oplossing/functies (`#functies`),
@@ -370,8 +384,9 @@ startscherm. "Opnieuw beginnen" onder Instellingen wist alles en zet de demodata
 3. Wil je een cookiemelding? Nu niet nodig, er is geen tracking en geen analytics.
 4. Moeten de voorwaarden door iemand nagekeken worden voordat de site echt live gaat?
 5. Wie zet het Vercel-project op, jij of je projectpartner? Vergeet Root Directory `web` niet.
-6. Komt er een wachtwoord-vergeten-stroom? De knop op `/login` toont nu alleen een melding.
-   Supabase kan dit met `resetPasswordForEmail`, maar dan is er wel een mailafzender nodig.
+6. Staan de herstel-adressen in Supabase? Onder Authentication, URL Configuration moeten
+   `http://localhost:5173/**` en het adres van de gepubliceerde site bij Redirect URLs staan,
+   anders komt de link uit een herstelmail op de verkeerde plek uit.
 7. Staat "Confirm email" uit in Supabase? Voor de demo hoort dat uit te staan, anders kan een
    nieuw account niet meteen inloggen. Voor de site echt live gaat zet je hem juist aan.
    Authentication, Sign In / Providers, Email.
@@ -485,3 +500,11 @@ startscherm. "Opnieuw beginnen" onder Instellingen wist alles en zet de demodata
   tabel `weeks` toegevoegd. Daarna live gecontroleerd met een echte gebruiker: de trigger, de
   policies, het vullen en het bewaren van een vinkje werken, en je ziet alleen je eigen rijen.
   Die testgebruiker is daarna weer verwijderd, dus de database is leeg.
+- **prompt 17**: wachtwoord vergeten afgemaakt. `/login` kreeg een derde stand die een
+  herstelmail stuurt, en de nieuwe pagina `/wachtwoord` (`src/pages/NewPassword.jsx`) vangt de
+  link uit die mail op. `auth.jsx` kreeg `requestReset()` en `updatePassword()`, en
+  `detectSessionInUrl` staat aan zodat supabase-js het token uit de URL leest. Na het opslaan
+  logt de app uit en stuurt terug naar `/login` met een melding. De rendertest rendert de
+  nieuwe pagina en controleert dat de knop wachtwoord vergeten op `/login` staat. Verder is de
+  branch `Supabase` gepusht en samengevoegd met `main`. Eigen SMTP en inloggen met een
+  Microsoft-account zijn bewust nog niet gedaan.
