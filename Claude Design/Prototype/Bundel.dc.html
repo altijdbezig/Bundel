@@ -85,7 +85,7 @@
       <sc-if value="{{ sourceDown }}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 1px solid #EFDCC2; background: #FDF7EE; border-radius: 11px; margin-bottom: 20px; flex-wrap: wrap;">
           <span style="width: 8px; height: 8px; border-radius: 50%; background: #B4690E; animation: pulse 1.8s ease-in-out infinite;"></span>
-          <span style="font-size: 13px; color: #7A4A0B; flex: 1; min-width: 180px;">Canvas niet bereikbaar. Je ziet de laatste sync van 12:04 — nieuwe wijzigingen komen zodra de bron terug is.</span>
+          <span style="font-size: 13px; color: #7A4A0B; flex: 1; min-width: 180px;">Canvas niet bereikbaar. Je ziet de laatste sync van 12:04. Nieuwe wijzigingen komen zodra de bron terug is.</span>
           <button type="button" onClick="{{ onToggleDown }}" style="height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid #E7D2AF; background: #FFFFFF; font-size: 12px; color: #7A4A0B; cursor: pointer;" style-hover="border-color: #B4690E;">Opnieuw</button>
         </div>
       </sc-if>
@@ -151,7 +151,7 @@
             </div>
 
             <div style="border: 1px solid #E6E3DC; border-radius: 13px; padding: 17px; background: #FFFFFF; display: flex; flex-direction: column;">
-              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E; margin-bottom: 13px;">Groep 4 · App SintLucas</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E; margin-bottom: 13px;">Groep 4 · App-project</div>
               <div style="display: flex; flex-direction: column; gap: 10px; flex: 1;">
                 <sc-for list="{{ chatPreview }}" as="m" hint-placeholder-count="2">
                   <div style="display: flex; gap: 9px;">
@@ -370,7 +370,7 @@ class Component extends DCLogic {
       { id: 1, van: "Jayden", initialen: "JB", tijd: "09:12", tekst: "Tokenrefresh werkt. Canvas-assignments komen nu binnen als Task.", eigen: false },
       { id: 2, van: "Noor", initialen: "NK", tijd: "09:20", tekst: "Top. Ik zet de deadlines in het moodboard zodat we ze kunnen tonen.", eigen: false },
       { id: 3, van: "Luca", initialen: "LV", tijd: "09:31", tekst: "Ik pak vandaag het Vandaag-scherm. Rooster en taken naast elkaar.", eigen: true },
-      { id: 4, van: "Jayden", initialen: "JB", tijd: "10:02", tekst: "Denk aan de foutstatus per bron — niet de hele pagina leeg als Canvas plat gaat.", eigen: false }
+      { id: 4, van: "Jayden", initialen: "JB", tijd: "10:02", tekst: "Denk aan de foutstatus per bron, niet de hele pagina leeg als Canvas plat gaat.", eigen: false }
     ]
   };
 
@@ -510,7 +510,7 @@ class Component extends DCLogic {
     }));
 
     const groepData = [
-      { id: "g1", naam: "Groep 4 · App SintLucas", meta: "4 leden · gekoppeld aan Interaction Design" },
+      { id: "g1", naam: "Groep 4 · App-project", meta: "4 leden · gekoppeld aan Interaction Design" },
       { id: "g2", naam: "Mediatheorie duo", meta: "2 leden · gekoppeld aan Mediatheorie" }
     ];
     const groepen = groepData.map(g => ({
@@ -536,7 +536,7 @@ class Component extends DCLogic {
         state,
         stateKort: !aan ? "uit" : kapot ? "fout" : "ok",
         uitleg: bronInfo[naam].uitleg,
-        sync: aan && !kapot ? bronInfo[naam].sync : "—",
+        sync: aan && !kapot ? bronInfo[naam].sync : "-",
         dotStyle: this.bronDot(aan ? BRON_KLEUR[naam] : "#D5D1C8"),
         stateStyle: { fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: kleur },
         btnLabel: aan ? "Verbreek" : "Koppel",
