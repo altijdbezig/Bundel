@@ -72,7 +72,8 @@ Bundel/
       ├─ auth.jsx    nep-sessie + RequireAuth
       ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · StartScreen.jsx ·
       │              Dialog.jsx · ScreenHeader.jsx · EmptyState.jsx · LessonDialog.jsx ·
-      │              AssignmentDialog.jsx · SearchDialog.jsx · NotificationsPanel.jsx ·
+      │              AssignmentDialog.jsx · GradeDialog.jsx · SearchDialog.jsx ·
+      │              NotificationsPanel.jsx ·
       │              screens/ (8 schermen)
       └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
 ```
@@ -249,6 +250,20 @@ anders opent het rooster op de verkeerde week.
 | Instellingen | Secties Weergave, Meldingen, Account en Demo. Meldingen per soort, plus een keuze voor het startscherm. |
 | Consistentie | Overal dezelfde schermkop (`ScreenHeader`), dezelfde vensterschil (`Dialog`), de bronstip links van de titel, en lege staten in dezelfde vorm. |
 
+**Prompt 12: cijfers met opmerkingen (4 vragen gesteld, 4 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Lijst | Eigen sectie "Laatste cijfers" boven de kaarten per vak, nieuwste bovenaan. |
+| Opmerking | Venster per cijfer, in dezelfde stijl als de les en de opdracht. |
+| Per cijfer | Waarvoor, datum, weging en docent. |
+| Hoeveel opmerkingen | Alleen sommige, zoals in het echt. Vier van de elf cijfers hebben er een. |
+
+Elk cijfer is nu een eigen invoer in plaats van een los getal:
+`{ id, value, date, weight, what, remark }`. Het gemiddelde is daarmee gewogen, zoals Magister
+het rekent. Cijfers met een opmerking krijgen een klein teken in de lijst, en zoeken vindt
+cijfers op hun naam en op de tekst van de opmerking.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -347,3 +362,9 @@ anders opent het rooster op de verkeerde week.
   meldingen per soort, groepstaken, het startscherm en een nep-sync per bron.
   De rendertest ving dat 5.8 in Nederland een voldoende is, waardoor het uitlichten van
   onvoldoendes nergens op reageerde. Eén cijfer aangepast naar 4.8 zodat die functie zichtbaar is.
+- **prompt 12**: cijfers omgebouwd van losse getallen naar invoeren met `what`, `date`,
+  `weight` en `remark`. Nieuwe sectie met de laatste cijfers op `/app/cijfers`, nieuw bestand
+  `GradeDialog.jsx` voor de opmerking, en gewogen gemiddelden via een `weighted()`-helper.
+  `getRecentGrades()` leidt de lijst nu af uit de invoeren, dus de losse `RECENT_GRADES` is weg.
+  De rendertest ving dat `getSourceStats()` nog `g.marks.length` telde, een veld dat na de
+  omzetting niet meer bestond; daardoor crashte het scherm Bronnen volledig.

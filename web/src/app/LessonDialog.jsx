@@ -67,20 +67,14 @@ export default function LessonDialog({ lesson, day, onClose }) {
       <DialogSection title={c.grades} action={c.toGrades} onAction={() => go('/app/cijfers')}>
         {!detail.grade && <p className="meta">{c.noGrades}</p>}
         {detail.grade && (
-          <div className="dlg__grades">
-            <span className="grade__marks">
-              {detail.grade.marks.map((m, i) => (
-                <span key={i} className={`grade__mark data ${markClass(m)}`}>
-                  {m.toFixed(1)}
-                </span>
-              ))}
-            </span>
-            <span className="dlg__average">
-              <span className={`grade__averageValue ${markClass(detail.grade.average)}`}>
-                {detail.grade.average.toFixed(1)}
-              </span>
-              <span className="label">{c.average}</span>
-            </span>
+          <div className="stack">
+            {detail.grade.entries.map((e) => (
+              <div key={e.id} className="dlg__row">
+                <span className="data dlg__rowTime">{e.date}</span>
+                <span className="dlg__rowTitle">{e.what}</span>
+                <span className={`data ${markClass(e.value)}`}>{e.value.toFixed(1)}</span>
+              </div>
+            ))}
           </div>
         )}
       </DialogSection>

@@ -281,7 +281,21 @@
 .pill.is-active { background: var(--ink-900); border-color: var(--ink-900); color: var(--ink-0); }
 
 /* ---------------- Laatste cijfers en avatars ---------------- */
-.recent { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.recent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+.recent:hover { background: var(--surface-sunken); }
 .recent__text { display: flex; flex-direction: column; min-width: 0; }
 .recent__subject { font-size: 14px; font-weight: 500; }
 .recent__mark { font-size: 15px; font-weight: 600; }
@@ -1409,3 +1423,91 @@
   .setrow { align-items: flex-start; }
   .dist { height: 88px; }
 }
+
+/* ================================================================
+   Cijfers: lijst met laatste cijfers en de opmerking erbij
+   ================================================================ */
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 8px;
+  border: none;
+  border-bottom: 1px solid var(--border-hair);
+  border-radius: 9px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+  transition: background-color 140ms ease;
+}
+.entry:last-child { border-bottom: none; }
+.entry:hover { background: var(--surface-sunken); }
+.entry__date { color: var(--ink-600); width: 46px; flex: none; font-size: 11.5px; }
+.entry__text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.entry__what {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.entry__remark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 7px;
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+.entry__value { font-size: 16px; font-weight: 600; width: 34px; text-align: right; flex: none; }
+.entry__value.is-high { color: var(--brand-700); }
+.entry__value.is-low { color: var(--err-ink); }
+
+/* Kop van het cijfervenster */
+.gradehero {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  border-radius: var(--r-card);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-hair);
+}
+.gradehero__value {
+  font-family: var(--font-mono);
+  font-size: 44px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.gradehero__value.is-high { color: var(--brand-700); }
+.gradehero__value.is-low { color: var(--err-ink); }
+
+/* De opmerking van de docent */
+.remark {
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 2px solid var(--brand-600);
+  border-radius: 0 9px 9px 0;
+  background: var(--brand-50);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-800);
+}
+
+/* Regel in een venster die je kunt aanklikken */
+.dlg__row--button {
+  width: 100%;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 140ms ease;
+}
+.dlg__row--button:hover { background: var(--surface-sunken); }

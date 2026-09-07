@@ -357,18 +357,84 @@ const ASSIGNMENTS = [
 
 // ---------------------------------------------------------------- cijfers
 
+/**
+ * Elk cijfer is een eigen invoer, zoals in Magister: waar het voor was,
+ * wanneer, hoe zwaar het meetelt, en soms een opmerking van de docent.
+ * Niet elk cijfer heeft een opmerking, want die vullen docenten lang niet
+ * altijd in.
+ */
 const GRADES = [
-  { subject: 'ixd', last: t('laatste 4 sep', 'last 4 Sep'), marks: [7.5, 8.0, 8.0] },
-  { subject: 'theory', last: t('laatste 2 sep', 'last 2 Sep'), marks: [4.8, 7.0] },
-  { subject: 'concepting', last: t('laatste 29 aug', 'last 29 Aug'), marks: [8.4, 8.0] },
-  { subject: 'design', last: t('laatste 28 aug', 'last 28 Aug'), marks: [7.2, 6.8, 7.4] },
-  { subject: 'english', last: t('laatste 26 aug', 'last 26 Aug'), marks: [8.0] },
-]
-
-const RECENT_GRADES = [
-  { subject: 'ixd', what: t('Prototype v1', 'Prototype v1'), mark: 8.0 },
-  { subject: 'theory', what: t('Deeltoets', 'Partial test'), mark: 7.0 },
-  { subject: 'concepting', what: t('Pitch', 'Pitch'), mark: 8.4 },
+  {
+    subject: 'ixd',
+    entries: [
+      { id: 'c1', value: 7.5, date: '21/08', weight: 1, what: t('Schetsopdracht', 'Sketch assignment'), remark: null },
+      {
+        id: 'c2',
+        value: 8.0,
+        date: '28/08',
+        weight: 2,
+        what: t('Wireframes', 'Wireframes'),
+        remark: t(
+          'Goede opbouw en duidelijke keuzes. Let op de consistentie van je knoppen tussen de schermen.',
+          'Well structured with clear choices. Watch the consistency of your buttons across screens.',
+        ),
+      },
+      { id: 'c3', value: 8.0, date: '04/09', weight: 2, what: t('Prototype v1', 'Prototype v1'), remark: null },
+    ],
+  },
+  {
+    subject: 'theory',
+    entries: [
+      {
+        id: 'c4',
+        value: 4.8,
+        date: '26/08',
+        weight: 1,
+        what: t('Deeltoets hoofdstuk 1', 'Partial test chapter 1'),
+        remark: t(
+          'De theorie over doelgroepen zat er nog niet in. Je mag herkansen in week 40, kom langs als je wil overleggen.',
+          'The theory on target audiences was not there yet. You can resit in week 40, drop by if you want to talk it through.',
+        ),
+      },
+      { id: 'c5', value: 7.0, date: '02/09', weight: 1, what: t('Deeltoets hoofdstuk 2', 'Partial test chapter 2'), remark: null },
+    ],
+  },
+  {
+    subject: 'concepting',
+    entries: [
+      {
+        id: 'c6',
+        value: 8.4,
+        date: '22/08',
+        weight: 2,
+        what: t('Pitch', 'Pitch'),
+        remark: t('Sterke pitch, helder verhaal en goed tempo.', 'Strong pitch, clear story and a good pace.'),
+      },
+      { id: 'c7', value: 8.0, date: '29/08', weight: 1, what: t('Conceptdocument', 'Concept document'), remark: null },
+    ],
+  },
+  {
+    subject: 'design',
+    entries: [
+      { id: 'c8', value: 7.2, date: '19/08', weight: 1, what: t('Typografie-oefening', 'Typography exercise'), remark: null },
+      {
+        id: 'c9',
+        value: 6.8,
+        date: '26/08',
+        weight: 1,
+        what: t('Kleurenstudie', 'Colour study'),
+        remark: t(
+          'Het contrast tussen je kleuren is net te laag. Kijk nog eens naar de richtlijnen voor toegankelijkheid.',
+          'The contrast between your colours is just too low. Have another look at the accessibility guidelines.',
+        ),
+      },
+      { id: 'c10', value: 7.4, date: '28/08', weight: 2, what: t('Posterontwerp', 'Poster design'), remark: null },
+    ],
+  },
+  {
+    subject: 'english',
+    entries: [{ id: 'c11', value: 8.0, date: '26/08', weight: 1, what: t('Presentation', 'Presentation'), remark: null }],
+  },
 ]
 
 // ---------------------------------------------------------------- groepen
@@ -599,18 +665,12 @@ export function getWeekBounds() {
 
 /** Alles wat bij een vak hoort, voor de pop-up als je op een les klikt. */
 export function getSubjectDetail(subjectKey, lang) {
-  const grade = GRADES.find((g) => g.subject === subjectKey)
+  const grade = getGrades(lang).find((g) => g.subjectKey === subjectKey)
   const group = GROUPS.find((g) => g.subject === subjectKey)
 
   return {
     assignments: getAssignments(lang).filter((a) => a.subjectKey === subjectKey),
-    grade: grade
-      ? {
-          marks: grade.marks,
-          last: pick(grade.last, lang),
-          average: Math.round((grade.marks.reduce((a, b) => a + b, 0) / grade.marks.length) * 10) / 10,
-        }
-      : null,
+    grade: grade ? { marks: grade.marks, entries: grade.entries, last: grade.last, average: grade.average } : null,
     group: group ? { id: group.id, name: pick(group.name, lang), members: group.members } : null,
   }
 }
@@ -682,46 +742,68 @@ export function getTimeline(lang) {
   return [...lessons, ...deadlines].sort((a, b) => a.at - b.at)
 }
 
+/* Gewogen gemiddelde, zoals Magister het rekent. */
+const weighted = (entries) => {
+  const total = entries.reduce((n, e) => n + e.weight, 0)
+  if (total === 0) return 0
+  return Math.round((entries.reduce((n, e) => n + e.value * e.weight, 0) / total) * 10) / 10
+}
+
+/** Eén cijfer, klaar om te tonen. */
+const gradeEntry = (entry, subjectKey, lang) => ({
+  ...entry,
+  what: pick(entry.what, lang),
+  remark: entry.remark ? pick(entry.remark, lang) : null,
+  subjectKey,
+  subject: pick(SUBJECTS[subjectKey], lang),
+  teacher: TEACHERS[subjectKey],
+})
+
 export function getGrades(lang) {
   return GRADES.map((g) => {
-    const average = g.marks.reduce((a, b) => a + b, 0) / g.marks.length
+    const entries = g.entries.map((e) => gradeEntry(e, g.subject, lang))
+    const values = entries.map((e) => e.value)
     /* Trend: het laatste cijfer tegenover het cijfer daarvoor. */
-    const trend = g.marks.length > 1 ? g.marks[g.marks.length - 1] - g.marks[g.marks.length - 2] : 0
+    const trend = values.length > 1 ? values[values.length - 1] - values[values.length - 2] : 0
+
     return {
       subjectKey: g.subject,
       subject: pick(SUBJECTS[g.subject], lang),
-      last: pick(g.last, lang),
-      marks: g.marks,
-      average: Math.round(average * 10) / 10,
-      count: g.marks.length,
+      teacher: TEACHERS[g.subject],
+      entries,
+      marks: values,
+      average: weighted(g.entries),
+      count: entries.length,
+      last: entries[entries.length - 1].date,
       trend: Math.round(trend * 10) / 10,
     }
   })
 }
 
+/** Alle cijfers op volgorde van datum, nieuwste eerst. */
+export function getRecentGrades(lang) {
+  return GRADES.flatMap((g) => g.entries.map((e) => gradeEntry(e, g.subject, lang))).sort(
+    (a, b) => dateKey(b.date) - dateKey(a.date),
+  )
+}
+
+export function getAverage() {
+  return weighted(GRADES.flatMap((g) => g.entries))
+}
+
 /** Verdeling van alle cijfers en de vakken die onder de 5.5 staan. */
 export function getGradeStats(lang) {
-  const all = GRADES.flatMap((g) => g.marks)
+  const all = GRADES.flatMap((g) => g.entries.map((e) => e.value))
   const buckets = [4, 5, 6, 7, 8, 9].map((n) => ({
     n,
     count: all.filter((m) => Math.floor(m) === n).length,
   }))
-  const failing = getGrades(lang).filter((g) => g.average < 5.5)
-  const lowMarks = getGrades(lang).filter((g) => g.marks.some((m) => m < 5.5))
-  return { total: all.length, buckets, max: Math.max(...buckets.map((b) => b.count)), failing, lowMarks }
-}
+  const grades = getGrades(lang)
+  const failing = grades.filter((g) => g.average < 5.5)
+  const lowMarks = grades.filter((g) => g.marks.some((m) => m < 5.5))
+  const withRemark = getRecentGrades(lang).filter((e) => e.remark).length
 
-export function getAverage() {
-  const all = GRADES.flatMap((g) => g.marks)
-  return Math.round((all.reduce((a, b) => a + b, 0) / all.length) * 10) / 10
-}
-
-export function getRecentGrades(lang) {
-  return RECENT_GRADES.map((g) => ({
-    ...g,
-    subject: pick(SUBJECTS[g.subject], lang),
-    what: pick(g.what, lang),
-  }))
+  return { total: all.length, buckets, max: Math.max(...buckets.map((b) => b.count)), failing, lowMarks, withRemark }
 }
 
 export function getGroups(lang) {
@@ -804,13 +886,13 @@ export function search(query, lang) {
     })
   })
 
-  getGrades(lang).forEach((g) => {
-    if (hit(g.subject)) {
+  getRecentGrades(lang).forEach((e) => {
+    if (hit(e.subject) || hit(e.what) || (e.remark && hit(e.remark))) {
       results.push({
-        id: `g-${g.subject}`,
+        id: `g-${e.id}`,
         type: 'grade',
-        title: g.subject,
-        meta: `${g.average.toFixed(1)} ${lang === 'en' ? 'average' : 'gemiddeld'}`,
+        title: `${e.subject} · ${e.what}`,
+        meta: `${e.value.toFixed(1)} · ${e.date}${e.remark ? ` · ${lang === 'en' ? 'with remark' : 'met opmerking'}` : ''}`,
         color: SOURCES.magister.color,
         sourceName: pick(SOURCES.magister.name, lang),
         to: '/app/cijfers',
@@ -899,7 +981,7 @@ const SYNC_HISTORY = {
  */
 export function getSourceStats(lang) {
   const lessons = WEEKS.flatMap((w) => w.days.flatMap((d) => d.lessons))
-  const marks = GRADES.reduce((n, g) => n + g.marks.length, 0)
+  const marks = GRADES.reduce((n, g) => n + g.entries.length, 0)
   const messages = GROUPS.reduce((n, g) => n + g.messages.length, 0)
   const bySource = (key) => ASSIGNMENTS.filter((a) => a.source === key)
 

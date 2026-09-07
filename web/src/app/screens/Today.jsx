@@ -4,6 +4,7 @@ import { fill, useI18n } from '../../i18n'
 import { useAppState } from '../state'
 import EmptyState from '../EmptyState'
 import LessonDialog from '../LessonDialog'
+import GradeDialog from '../GradeDialog'
 import ScreenHeader from '../ScreenHeader'
 import { IconCalendar } from '../../components/Icons'
 import { getGroups, getRecentGrades, getTimeline, getToday } from '../data'
@@ -14,6 +15,7 @@ export default function Today() {
   const { t, lang } = useI18n()
   const { done, toggleDone } = useAppState()
   const [openLesson, setOpenLesson] = useState(null)
+  const [openGrade, setOpenGrade] = useState(null)
   const c = t.app.today
 
   const today = getToday(lang)
@@ -109,14 +111,16 @@ export default function Today() {
             </Link>
           </div>
           <div className="stack stack-2">
-            {recent.map((g) => (
-              <div key={g.subject} className="recent">
+            {recent.slice(0, 3).map((g) => (
+              <button key={g.id} type="button" className="recent" onClick={() => setOpenGrade(g)}>
                 <span className="recent__text">
                   <span className="recent__subject">{g.subject}</span>
-                  <span className="meta">{g.what}</span>
+                  <span className="meta">
+                    {g.what} · {g.date}
+                  </span>
                 </span>
-                <span className={`recent__mark data ${markClass(g.mark)}`}>{g.mark.toFixed(1)}</span>
-              </div>
+                <span className={`recent__mark data ${markClass(g.value)}`}>{g.value.toFixed(1)}</span>
+              </button>
             ))}
           </div>
         </section>
@@ -145,6 +149,7 @@ export default function Today() {
       </div>
 
       <LessonDialog lesson={openLesson} day={{ day: today.title, date: '' }} onClose={() => setOpenLesson(null)} />
+      <GradeDialog entry={openGrade} onClose={() => setOpenGrade(null)} />
     </div>
   )
 }

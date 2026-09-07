@@ -3,9 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../../i18n'
 import EmptyState from '../EmptyState'
 import ScreenHeader from '../ScreenHeader'
+import GradeDialog from '../GradeDialog'
 import Dialog, { DialogFacts, DialogSection } from '../Dialog'
-import { IconGrades } from '../../components/Icons'
-import { getAssignments, getAverage, getGrades, getGradeStats, sourceColor, sourceName } from '../data'
+import { IconGrades, IconInbox } from '../../components/Icons'
+import {
+  getAssignments,
+  getAverage,
+  getGrades,
+  getGradeStats,
+  getRecentGrades,
+  sourceColor,
+  sourceName,
+} from '../data'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
 
@@ -27,16 +36,21 @@ export default function Grades() {
   const { t, lang } = useI18n()
   const c = t.app.grades
   const navigate = useNavigate()
-  const [open, setOpen] = useState(null)
+
+  const [openSubject, setOpenSubject] = useState(null)
+  const [openEntry, setOpenEntry] = useState(null)
 
   const grades = getGrades(lang)
+  const recent = getRecentGrades(lang)
   const overall = getAverage()
   const stats = getGradeStats(lang)
 
-  const detailAssignments = open ? getAssignments(lang).filter((a) => a.subjectKey === open.subjectKey) : []
+  const detailAssignments = openSubject
+    ? getAssignments(lang).filter((a) => a.subjectKey === openSubject.subjectKey)
+    : []
 
   function go(to) {
-    setOpen(null)
+    setOpenSubject(null)
     navigate(to)
   }
 
@@ -44,7 +58,7 @@ export default function Grades() {
     <div className="screen">
       <ScreenHeader title={c.title} subtitle={`${c.subtitle} · ${sourceName('magister', lang)}`} source="magister">
         <div className="grades__overall">
-          <span className="label">{c.overall}</span>
+          <span className="label">{c.weighted}</span>
           <span className={`grades__overallValue data ${markClass(overall)}`}>{overall.toFixed(1)}</span>
         </div>
       </ScreenHeader>
@@ -74,10 +88,40 @@ export default function Grades() {
         </section>
       )}
 
+      {/* Laatste cijfers, nieuwste bovenaan. Klikken toont de opmerking. */}
+      <section className="card stack stack-3">
+        <div className="screen__cardHead">
+          <span className="label">{c.recent}</span>
+          <span className="meta">
+            {c.recentNote} · {fill(c.remarkCount, { count: stats.withRemark })}
+          </span>
+        </div>
+
+        <div className="stack">
+          {recent.map((e) => (
+            <button key={e.id} type="button" className="entry" onClick={() => setOpenEntry(e)}>
+              <span className="entry__date data">{e.date}</span>
+              <span className="entry__text">
+                <span className="entry__what">{e.what}</span>
+                <span className="meta">
+                  {e.subject} · {fill(c.weightValue, { weight: e.weight })}
+                </span>
+              </span>
+              {e.remark && (
+                <span className="entry__remark" title={c.hasRemark}>
+                  <IconInbox size={15} />
+                </span>
+              )}
+              <span className={`entry__value data ${markClass(e.value)}`}>{e.value.toFixed(1)}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Kaart per vak */}
       <div className="gradecards">
         {grades.map((g) => (
-          <button key={g.subjectKey} type="button" className="card gradecard" onClick={() => setOpen(g)}>
+          <button key={g.subjectKey} type="button" className="card gradecard" onClick={() => setOpenSubject(g)}>
             <span className="label gradecard__subject">{g.subject}</span>
 
             <span className="gradecard__top">
@@ -131,30 +175,46 @@ export default function Grades() {
 
       {/* Pop-up per vak */}
       <Dialog
-        open={!!open}
-        onClose={() => setOpen(null)}
+        open={!!openSubject}
+        onClose={() => setOpenSubject(null)}
         eyebrow={sourceName('magister', lang)}
         dot={sourceColor('magister')}
-        title={open?.subject ?? ''}
+        title={openSubject?.subject ?? ''}
       >
-        {open && (
+        {openSubject && (
           <>
             <DialogFacts
               items={[
-                { label: c.detail.average, value: open.average.toFixed(1) },
-                { label: c.detail.count, value: String(open.count) },
-                { label: c.detail.last, value: open.last },
+                { label: c.weighted, value: openSubject.average.toFixed(1) },
+                { label: c.detail.count, value: String(openSubject.count) },
+                { label: c.detail.last, value: openSubject.last },
+                { label: c.teacher, value: openSubject.teacher },
               ]}
             />
 
             <DialogSection title={c.detail.all} action={c.detail.toSchedule} onAction={() => go('/app/rooster')}>
-              <span className="grade__marks">
-                {open.marks.map((m, i) => (
-                  <span key={i} className={`grade__mark data ${markClass(m)}`}>
-                    {m.toFixed(1)}
-                  </span>
+              <div className="stack">
+                {openSubject.entries.map((e) => (
+                  <button
+                    key={e.id}
+                    type="button"
+                    className="dlg__row dlg__row--button"
+                    onClick={() => {
+                      setOpenSubject(null)
+                      setOpenEntry(e)
+                    }}
+                  >
+                    <span className="data dlg__rowTime">{e.date}</span>
+                    <span className="dlg__rowTitle">{e.what}</span>
+                    {e.remark && (
+                      <span className="entry__remark" title={c.hasRemark}>
+                        <IconInbox size={14} />
+                      </span>
+                    )}
+                    <span className={`data ${markClass(e.value)}`}>{e.value.toFixed(1)}</span>
+                  </button>
                 ))}
-              </span>
+              </div>
             </DialogSection>
 
             <DialogSection
@@ -176,6 +236,9 @@ export default function Grades() {
           </>
         )}
       </Dialog>
+
+      {/* Pop-up per cijfer, met de opmerking */}
+      <GradeDialog entry={openEntry} onClose={() => setOpenEntry(null)} />
     </div>
   )
 }
