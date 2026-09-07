@@ -271,6 +271,10 @@ export const nl = {
       subtitle: 'Week van 7 september',
       empty: 'Geen les.',
       today: 'vandaag',
+      now: 'nu',
+      deadline: 'deadline',
+      deadlineTitle: 'Er hoort vandaag een deadline bij dit vak',
+      source: 'Uit Magister',
     },
 
     grades: {
@@ -698,6 +702,10 @@ export const en = {
       subtitle: 'Week of 7 September',
       empty: 'No classes.',
       today: 'today',
+      now: 'now',
+      deadline: 'deadline',
+      deadlineTitle: 'A deadline for this subject falls on this day',
+      source: 'From Magister',
     },
 
     grades: {

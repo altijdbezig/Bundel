@@ -292,41 +292,205 @@
 .avatar.is-self { background: var(--brand-600); color: var(--ink-0); }
 .avatar--sm { width: 22px; height: 22px; border-radius: 7px; font-size: 10px; }
 
-/* ---------------- Rooster ---------------- */
-.week { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--sp-3); }
-.week__day {
+/* ---------------- Rooster: tijdraster ---------------- */
+/* Kolombreedte van de tijdbalk links. Kop en lichaam delen dezelfde maat. */
+.sched { --rail: 58px; padding: 0; overflow: hidden; }
+
+.sched__head {
+  display: grid;
+  grid-template-columns: var(--rail) repeat(5, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border-card);
+  background: var(--surface-sunken);
+}
+.sched__corner { border-right: 1px solid var(--border-hair); }
+.sched__dayHead {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  padding: 15px;
-  border: 1px solid var(--border-card);
-  border-radius: var(--r-card);
-  background: var(--surface-card);
-}
-.week__day.is-today { box-shadow: inset 0 2px 0 0 var(--brand-600); }
-.week__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.week__name { font-size: 14px; font-weight: 600; }
-.week__date { color: var(--ink-600); font-size: 11.5px; }
-.week__badge { align-self: flex-start; }
-.week__lesson {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 9px;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border-hair);
+  gap: 2px;
+  padding: 11px 12px;
+  border-right: 1px solid var(--border-hair);
   min-width: 0;
 }
-.week__time { color: var(--ink-600); flex: none; }
-.week__subject {
-  flex: 1;
+.sched__dayHead:last-child { border-right: none; }
+.sched__dayHead.is-today { background: var(--brand-50); box-shadow: inset 0 2px 0 0 var(--brand-600); }
+.sched__dayName {
   font-size: 13px;
-  font-weight: 500;
-  min-width: 0;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.sched__dayDate { font-size: 11px; color: var(--ink-600); }
+.sched__todayBadge { align-self: flex-start; margin-top: 3px; }
+
+.sched__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rail) repeat(5, minmax(0, 1fr));
+}
+
+/* Uurlijn over de volle breedte, achter alles */
+.sched__line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-hair);
+  pointer-events: none;
+}
+
+.sched__rail { position: relative; border-right: 1px solid var(--border-hair); }
+.sched__hour {
+  position: absolute;
+  right: 9px;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--ink-600);
+  background: var(--surface-card);
+  padding: 0 2px;
+}
+
+.sched__col { position: relative; border-right: 1px solid var(--border-hair); }
+.sched__col:last-child { border-right: none; }
+.sched__col.is-today { background: rgba(14, 124, 102, 0.035); }
+
+/* Lesblok, hoogte volgt de duur */
+.block {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  padding: 7px 9px;
+  border: 1px solid var(--border-card);
+  border-left: 2px solid var(--ink-300);
+  border-radius: 9px;
+  background: var(--surface-card);
+  transition: border-color 140ms ease;
+}
+.block:hover { border-color: var(--ink-300); border-left-color: var(--ink-900); }
+.block.is-now {
+  background: var(--brand-100);
+  border-color: var(--brand-200);
+  border-left-color: var(--brand-600);
+}
+.block__time { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--ink-600); }
+.block.is-now .block__time { color: var(--brand-700); }
+.block__nowTag {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: var(--r-pill);
+  background: var(--brand-600);
+  color: var(--ink-0);
+}
+.block__subject {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.block__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ink-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.block__deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 3px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--warn-ink);
+}
+
+/* Nu-streep */
+.sched__now {
+  position: absolute;
+  left: var(--rail);
+  right: 0;
+  height: 0;
+  border-top: 1px solid var(--brand-600);
+  pointer-events: none;
+  z-index: 2;
+}
+.sched__nowTime {
+  position: absolute;
+  right: calc(100% + 8px);
+  transform: translateY(-50%);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--brand-700);
+  background: var(--surface-card);
+  padding: 0 3px;
+  white-space: nowrap;
+}
+/* Stip op de kolom van vandaag: elke kolom is een vijfde van de breedte. */
+.sched__nowDot {
+  position: absolute;
+  top: 0;
+  left: calc((var(--day) + 0.5) * 20%);
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--brand-600);
+}
+
+/* ---------------- Rooster: agenda-lijst op mobiel ---------------- */
+.agenda { display: none; flex-direction: column; gap: var(--sp-3); }
+.agenda__day { display: flex; flex-direction: column; gap: var(--sp-3); }
+.agenda__day.is-today { box-shadow: inset 0 2px 0 0 var(--brand-600); }
+.agenda__head { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.agenda__name { font-size: 14px; font-weight: 600; }
+.agenda__date { font-size: 11.5px; color: var(--ink-600); margin-right: auto; }
+
+.agenda__list { display: flex; flex-direction: column; }
+.agenda__row { display: flex; gap: 11px; padding: 4px 0; min-width: 0; }
+.agenda__times {
+  display: flex;
+  flex-direction: column;
+  width: 46px;
+  flex: none;
+  font-size: 11.5px;
+  color: var(--ink-800);
+  padding-top: 1px;
+}
+.agenda__end { color: var(--ink-500); }
+.agenda__rail {
+  width: 2px;
+  flex: none;
+  border-radius: 1px;
+  background: var(--ink-200);
+  margin: 3px 0;
+}
+.agenda__row.is-now .agenda__rail { background: var(--brand-600); }
+.agenda__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 10px;
+}
+.agenda__now { align-self: flex-start; margin-top: 4px; }
+.week__empty { padding: 2px; }
+
+@media (max-width: 700px) {
+  .sched { display: none; }
+  .agenda { display: flex; }
 }
 
 /* ---------------- Cijfers ---------------- */

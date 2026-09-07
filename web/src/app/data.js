@@ -72,6 +72,30 @@ const SUBJECTS = {
   career: t('Loopbaan', 'Career'),
 }
 
+/* Docent per vak. Nepdata, net als de rest. */
+const TEACHERS = {
+  theory: 'M. de Groot',
+  ixd: 'S. Willems',
+  concepting: 'S. Willems',
+  project: 'R. Aydin',
+  design: 'K. Peters',
+  english: 'L. Janssen',
+  career: 'R. Aydin',
+}
+
+/**
+ * Vaste "nu" van de demo: maandag 10:15, midden in Interaction Design.
+ * Zo staat de nu-streep altijd op dezelfde plek, ongeacht wanneer je kijkt.
+ * Vervang dit door de echte klok zodra de app live data toont.
+ */
+export const DEMO_NOW_MINUTES = 10 * 60 + 15
+
+/** "09:30" naar minuten sinds middernacht. */
+export function toMinutes(time) {
+  const [h, m] = String(time).split(':').map(Number)
+  return h * 60 + m
+}
+
 // ---------------------------------------------------------------- rooster
 
 const TODAY_LESSONS = [
@@ -84,48 +108,53 @@ const TODAY_LESSONS = [
 const WEEK = [
   {
     day: t('Maandag', 'Monday'),
+    short: t('ma', 'Mon'),
     date: '07/09',
     today: true,
     lessons: [
-      { time: '08:30', subject: 'theory', room: 'B1.04' },
-      { time: '09:30', subject: 'ixd', room: 'A2.11' },
-      { time: '11:15', subject: 'concepting', room: 'A2.11' },
-      { time: '13:30', subject: 'project', room: 'Studio 3' },
+      { time: '08:30', end: '09:20', subject: 'theory', room: 'B1.04' },
+      { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+      { time: '11:15', end: '12:45', subject: 'concepting', room: 'A2.11' },
+      { time: '13:30', end: '15:30', subject: 'project', room: 'Studio 3' },
     ],
   },
   {
     day: t('Dinsdag', 'Tuesday'),
+    short: t('di', 'Tue'),
     date: '08/09',
     today: false,
     lessons: [
-      { time: '09:30', subject: 'design', room: 'A1.02' },
-      { time: '11:15', subject: 'english', room: 'C0.07' },
+      { time: '09:30', end: '11:00', subject: 'design', room: 'A1.02' },
+      { time: '11:15', end: '12:45', subject: 'english', room: 'C0.07' },
     ],
   },
   {
     day: t('Woensdag', 'Wednesday'),
+    short: t('wo', 'Wed'),
     date: '09/09',
     today: false,
     lessons: [
-      { time: '08:30', subject: 'project', room: 'Studio 3' },
-      { time: '13:30', subject: 'career', room: 'B0.11' },
+      { time: '08:30', end: '12:00', subject: 'project', room: 'Studio 3' },
+      { time: '13:30', end: '14:30', subject: 'career', room: 'B0.11' },
     ],
   },
   {
     day: t('Donderdag', 'Thursday'),
+    short: t('do', 'Thu'),
     date: '10/09',
     today: false,
     lessons: [
-      { time: '09:30', subject: 'ixd', room: 'A2.11' },
-      { time: '11:15', subject: 'theory', room: 'B1.04' },
-      { time: '14:00', subject: 'project', room: 'Studio 3' },
+      { time: '09:30', end: '11:00', subject: 'ixd', room: 'A2.11' },
+      { time: '11:15', end: '12:45', subject: 'theory', room: 'B1.04' },
+      { time: '14:00', end: '16:00', subject: 'project', room: 'Studio 3' },
     ],
   },
   {
     day: t('Vrijdag', 'Friday'),
+    short: t('vr', 'Fri'),
     date: '11/09',
     today: false,
-    lessons: [{ time: '10:00', subject: 'design', room: 'A1.02' }],
+    lessons: [{ time: '10:00', end: '12:00', subject: 'design', room: 'A1.02' }],
   },
 ]
 
@@ -138,6 +167,7 @@ const ASSIGNMENTS = [
     subject: 'ixd',
     source: 'canvas',
     due: t('vandaag 17:00', 'today 17:00'),
+    dueDate: '07/09',
     urgent: true,
   },
   {
@@ -146,6 +176,7 @@ const ASSIGNMENTS = [
     subject: 'project',
     source: 'own',
     due: t('di 8 sep', 'Tue 8 Sep'),
+    dueDate: '08/09',
     urgent: true,
   },
   {
@@ -154,6 +185,7 @@ const ASSIGNMENTS = [
     subject: 'theory',
     source: 'canvas',
     due: t('wo 10 sep', 'Wed 10 Sep'),
+    dueDate: '09/09',
     urgent: false,
   },
   {
@@ -162,6 +194,7 @@ const ASSIGNMENTS = [
     subject: 'concepting',
     source: 'teams',
     due: t('do 11 sep', 'Thu 11 Sep'),
+    dueDate: '10/09',
     urgent: false,
   },
   {
@@ -170,6 +203,7 @@ const ASSIGNMENTS = [
     subject: 'design',
     source: 'magister',
     due: t('vr 12 sep', 'Fri 12 Sep'),
+    dueDate: '11/09',
     urgent: false,
   },
   {
@@ -178,6 +212,7 @@ const ASSIGNMENTS = [
     subject: 'career',
     source: 'canvas',
     due: t('vr 4 sep', 'Fri 4 Sep'),
+    dueDate: null,
     urgent: false,
   },
 ]
@@ -357,8 +392,28 @@ export function getWeek(lang) {
   return WEEK.map((d) => ({
     ...d,
     day: pick(d.day, lang),
-    lessons: d.lessons.map((l) => ({ ...l, subject: pick(SUBJECTS[l.subject], lang) })),
+    short: pick(d.short, lang),
+    lessons: d.lessons.map((l) => ({
+      ...l,
+      subjectKey: l.subject,
+      subject: pick(SUBJECTS[l.subject], lang),
+      teacher: TEACHERS[l.subject],
+      start: toMinutes(l.time),
+      finish: toMinutes(l.end),
+      /* Hoort er die dag een deadline bij dit vak? Dat verbindt rooster en opdrachten. */
+      deadline: ASSIGNMENTS.some((a) => a.dueDate === d.date && a.subject === l.subject),
+    })),
   }))
+}
+
+/** Vroegste begintijd en laatste eindtijd van de week, in minuten. */
+export function getWeekBounds() {
+  const all = WEEK.flatMap((d) => d.lessons)
+  if (all.length === 0) return { from: 8 * 60, to: 16 * 60 }
+  return {
+    from: Math.min(...all.map((l) => toMinutes(l.time))),
+    to: Math.max(...all.map((l) => toMinutes(l.end))),
+  }
 }
 
 export function getAssignments(lang) {

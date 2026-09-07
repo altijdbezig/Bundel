@@ -200,6 +200,19 @@ Wat daarvoor is aangepast: vaste vensterhoogte zodat het niet springt, icoon per
 bronnaam rechts, het gezochte stuk vet in de titel, pijltjestoetsen en Enter, en een voettekst
 met de toetsen. Op smalle schermen vallen de bronnaam en de voettekst weg.
 
+**Prompt 8: rooster herzien (8 vragen gesteld, 8 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Opzet | Tijdraster: uren verticaal, dagen horizontaal, blokhoogte volgt de lesduur. Vier voorstellen voorgelegd met ASCII-schetsen. |
+| Eindtijden | Toegevoegd aan de nepdata voor de hele week, zodat de blokhoogtes kloppen. |
+| Per les | Vak, lokaal, docent, bronstip en een markering als er die dag een deadline bij dat vak hoort. |
+| Weken | Een vaste week. Bladeren zou lege weken tonen. |
+| Uren | Passend bij de data: een half uur voor de eerste les tot een half uur na de laatste. |
+| Nu-streep | Groene lijn met een stip op de kolom van vandaag, op een vaste demo-tijd van 10:15. |
+| Kleur | Blokken wit met een grijs streepje links, alleen de huidige les groen. |
+| Mobiel | Onder 700px een agenda-lijst met een tijdbalk links, geen zijwaarts schuiven. |
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -270,3 +283,10 @@ met de toetsen. Op smalle schermen vallen de bronnaam en de voettekst weg.
   springt. Toetsenbordnavigatie met pijltjes en Enter. Leeg venster toont snelkoppelingen naar
   de zes schermen en de eerstvolgende deadline. Rendertest controleert nu ook de inhoud van het
   lege venster en de groepering.
+- **prompt 8**: rooster vervangen door een tijdraster. Nepdata uitgebreid met eindtijden,
+  docenten en `dueDate` per opdracht, zodat `getWeek()` per les kan zeggen of er die dag een
+  deadline bij hoort. Nieuwe helpers in `data.js`: `toMinutes()`, `getWeekBounds()` en
+  `DEMO_NOW_MINUTES` (de demo-tijd staat vast op 10:15, midden in Interaction Design).
+  Onder 700px een agenda-lijst in plaats van het raster. Rendertest controleert nu ook de
+  roosterdata: eindtijden na begintijden, docent per les, rastergrenzen, gekoppelde deadlines
+  en of de nu-streep in de juiste les valt.
