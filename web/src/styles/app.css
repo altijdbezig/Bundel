@@ -1732,3 +1732,17 @@
 .signal__link:hover { color: var(--warn-ink); }
 .tl__body--own { cursor: default; }
 .tl__body--own:hover { background: none; }
+
+/* Laden en mislukken, voordat de app zelf er staat. */
+.appboot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  min-height: 100vh;
+  padding: var(--sp-6);
+  background: var(--surface-page);
+  text-align: center;
+}
+.appboot__text { color: var(--ink-600); }

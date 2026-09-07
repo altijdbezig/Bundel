@@ -60,17 +60,20 @@ Bundel/
 ├─ Claude Design/
 │  ├─ Branding/Bundel Branding Kit.dc.html    merkrichtlijnen, 8 tabs
 │  └─ Prototype/Bundel.dc.html                app-prototype, desktop + mobiel
+├─ supabase/migrations/                       het databaseschema, vier migraties (prompt 16)
 └─ web/                                       de website (prompt 1)
    ├─ README.md                               draaien, structuur, wat nog niet werkt
    ├─ index.html · vite.config.js · package.json · vercel.json
+   ├─ .env.example                            welke omgevingsvariabelen nodig zijn
    ├─ public/  favicon.svg · _redirects
    └─ src/
-      ├─ main.jsx · App.jsx · i18n.jsx
+      ├─ main.jsx · App.jsx · i18n.jsx · supabase.js · __smoke.jsx (rendertest)
       ├─ styles/   tokens.css · global.css · layout.css · app.css
       ├─ components/ Logo · Icons · Header · Footer · Reveal · AppPreview · WaitlistForm ·
       │              ContactCard
-      ├─ auth.jsx    nep-sessie + RequireAuth
-      ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · StartScreen.jsx ·
+      ├─ auth.jsx    Supabase Auth + RequireAuth
+      ├─ app/        data.js (getters) · demo.js (demodata) · store.js (database) ·
+      │              state.jsx · AppLayout.jsx · StartScreen.jsx ·
       │              Dialog.jsx · ScreenHeader.jsx · EmptyState.jsx · LessonDialog.jsx ·
       │              AssignmentDialog.jsx · GradeDialog.jsx · OwnItemDialog.jsx ·
       │              signal.js · SearchDialog.jsx ·
@@ -307,6 +310,34 @@ Bij een echte back-end worden dit de enige gegevens die Bundel zelf bewaart.
 
 Op mobiel blijft alleen de avatar staan en klapt het menu naar beneden open in plaats van omhoog.
 
+**Prompt 16: Supabase gekoppeld (8 vragen gesteld, 8 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Branch | Nieuwe branch `Supabase` vanaf `main`. `Back-end` blijft van de projectpartner. |
+| Omvang | Alles in een keer: echte auth, volledig schema met RLS, en de app leest uit de database. |
+| Schooldata | Per gebruiker een eigen kopie van de demodata, klaargezet bij de eerste keer inloggen. |
+| Inloggen | E-mail en wachtwoord via Supabase Auth. Microsoft OAuth kan er later naast. |
+| Bevestigingsmail | Uit, zodat aanmelden je meteen inlogt. Zet dit aan in Supabase zodra de site echt live gaat. |
+| Registreren | Op `/login`, met een schakelaar tussen inloggen en account aanmaken. |
+| Tweetalig | Twee kolommen per tekst: `name_nl` en `name_en`. |
+| Wachtlijst | Gaat naar de tabel `waitlist`. Iedereen mag erin schrijven, niemand mag hem lezen. |
+
+Het project heet **Bundel** (`fefmhfykrbpknaywgyqn`, eu-central-1). Zeventien tabellen, allemaal
+met RLS aan. Elke rij heeft een `user_id` en vier policies: je ziet en wijzigt alleen je eigen
+rijen. `waitlist` is de uitzondering: alleen invoegen, door iedereen, en niemand mag lezen.
+Een trigger op `auth.users` maakt bij het aanmelden meteen een profiel aan.
+
+Waar wat staat:
+- `src/app/demo.js` is de demodata, en verder niets. Alleen `store.js` leest hem.
+- `src/app/store.js` praat als enige met de database: laden, vullen, schrijven.
+- `src/app/data.js` rekent en groepeert, maar bezit niets meer. `setDataset()` vult hem.
+- `src/app/state.jsx` doet het scherm meteen bij en stuurt de wijziging naar `store.js`.
+
+Wat nu echt bewaard blijft: afgevinkte opdrachten, groepstaken, gelezen meldingen, verstuurde
+berichten, gekoppelde bronnen, eigen roosteritems, taal- en meldingsvoorkeuren en het
+startscherm. "Opnieuw beginnen" onder Instellingen wist alles en zet de demodata terug.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -317,12 +348,16 @@ Op mobiel blijft alleen de avatar staan en klapt het menu naar beneden open in p
 - Alle zichtbare tekst staat in `src/i18n.jsx`, in `nl` én `en`. Nergens losse strings in componenten.
 - Alle kleuren via `var(--…)`. Geen losse hexwaarden in `layout.css`.
 - Wat nog niet echt werkt is per onderdeel gemarkeerd in `web/README.md` (tabel).
-- Nepdata hoort in `src/app/data.js` en nergens anders. Schermen bevatten geen lijstjes.
+- Demodata hoort in `src/app/demo.js` en nergens anders. Schermen bevatten geen lijstjes.
 - De app-demo heeft een eigen layout zonder site-header en site-footer. `SiteLayout` in
   `App.jsx` geldt alleen voor de publieke pagina's.
-- Rendertest zonder browser: bouw met `npx vite build --ssr` en render de routes en schermen
-  met `react-dom/server`. De Chrome-extensie blokkeert localhost, dus dit is de manier om te
-  controleren dat er niets crasht.
+- Rendertest zonder browser: `npm run smoke` in `web/`. Die zet een nep-PostgREST neer, laat
+  `store.js` daar de demodata in schrijven en weer uitlezen, controleert de uitkomsten en
+  rendert daarna elk scherm en elke pagina met `react-dom/server`. De Chrome-extensie
+  blokkeert localhost, dus dit is de manier om te controleren dat er niets crasht.
+- Sleutels staan nooit in de code. Lokaal in `web/.env.local` (staat in `.gitignore`), op
+  Vercel bij Environment Variables. `web/.env.example` zegt welke er nodig zijn.
+- Schemawijzigingen gaan als migratie, en het bestand komt in `supabase/migrations/`.
 - Controle voor je klaar bent: `grep -rnP "\x{2014}" .` moet leeg zijn buiten `node_modules`,
   `dist` en `support.js` (dat is gegenereerde Claude Design runtime, gemarkeerd als do not edit).
 
@@ -335,8 +370,16 @@ Op mobiel blijft alleen de avatar staan en klapt het menu naar beneden open in p
 3. Wil je een cookiemelding? Nu niet nodig, er is geen tracking en geen analytics.
 4. Moeten de voorwaarden door iemand nagekeken worden voordat de site echt live gaat?
 5. Wie zet het Vercel-project op, jij of je projectpartner? Vergeet Root Directory `web` niet.
-6. Komt er een wachtwoord-vergeten-stroom? De link op `/login` wijst nu naar `#wachtwoord` en
-   doet nog niets.
+6. Komt er een wachtwoord-vergeten-stroom? De knop op `/login` toont nu alleen een melding.
+   Supabase kan dit met `resetPasswordForEmail`, maar dan is er wel een mailafzender nodig.
+7. Staat "Confirm email" uit in Supabase? Voor de demo hoort dat uit te staan, anders kan een
+   nieuw account niet meteen inloggen. Voor de site echt live gaat zet je hem juist aan.
+   Authentication, Sign In / Providers, Email.
+8. Wie zet de omgevingsvariabelen in Vercel? `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY`
+   moeten daar staan, anders werkt inloggen op de gepubliceerde site niet.
+9. Blijft de standaard mailafzender van Supabase goed genoeg? Die is beperkt tot een paar
+   berichten per uur. Zodra er echte gebruikers zijn is een eigen SMTP nodig.
+10. Wanneer gaat `demo.js` weg? Dat kan zodra de eerste echte koppeling de tabellen vult.
 
 ## 6. Changelog
 
@@ -427,3 +470,18 @@ Op mobiel blijft alleen de avatar staan en klapt het menu naar beneden open in p
 - **prompt 15**: de drie kale links onderaan de zijbalk vervangen door een accountknop met een
   menu. Het accountblok bovenaan is weg, want dat stond dubbel. Nieuw icoon `IconLogout`.
   Menu sluit met Escape, met een klik ernaast en bij het wisselen van scherm.
+- **prompt 16**: Supabase gekoppeld. Nieuw project `Bundel`, vier migraties in
+  `supabase/migrations/`: zeventien tabellen met RLS, een trigger die bij het aanmelden een
+  profiel aanmaakt, en het recht om die functie via de API aan te roepen weer ingetrokken.
+  De nepdata is uit `data.js` gehaald en staat nu in `demo.js`; `data.js` werkt op een dataset
+  die `store.js` uit de database laadt en met `setDataset()` klaarzet. `auth.jsx` is echte auth
+  geworden, `/login` kreeg een schakelaar tussen inloggen en aanmelden, en het
+  wachtlijstformulier schrijft nu echt weg. Nieuwe bestanden: `src/supabase.js`,
+  `src/app/demo.js`, `src/app/store.js`, `src/__smoke.jsx` en `.env.example`.
+  De rendertest is meegegroeid: hij zet een nep-PostgREST neer, zodat het vullen en het lezen
+  tegen elkaar gecontroleerd worden. Die ving drie dingen: er zijn elf opdrachten en geen
+  twaalf, geen enkel vak staat gemiddeld onvoldoende (alleen losse cijfers), en een lege dag
+  in het rooster verdween omdat de datums bij de lessen hingen. Daarvoor is `day_dates` aan de
+  tabel `weeks` toegevoegd. Daarna live gecontroleerd met een echte gebruiker: de trigger, de
+  policies, het vullen en het bewaren van een vinkje werken, en je ziet alleen je eigen rijen.
+  Die testgebruiker is daarna weer verwijderd, dus de database is leeg.

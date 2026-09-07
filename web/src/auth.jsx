@@ -1,60 +1,104 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-
-const STORAGE_KEY = 'bundel.demo-session'
+import { supabase, configured } from './supabase'
 
 /**
- * Nep-sessie voor de demo. Zet alleen een vlag in de browser.
+ * Inloggen via Supabase Auth.
  *
- * Zodra er echte auth is: vervang signIn en signOut door aanroepen naar de
- * back-end en lees `signedIn` uit het antwoord van de server. RequireAuth
- * hoeft dan niet te veranderen.
+ * De sessie staat in de browser en wordt door supabase-js zelf ververst.
+ * De functies hieronder geven geen kant-en-klare zin terug maar een code,
+ * zodat het scherm hem in de goede taal kan tonen.
  */
 
-const AuthContext = createContext({ signedIn: false, signIn: () => {}, signOut: () => {} })
+const AuthContext = createContext(null)
 
-function read() {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) === '1'
-  } catch {
-    return false
-  }
+/** Vertaalt de melding van Supabase naar een van onze eigen codes. */
+function codeFor(error) {
+  const message = String(error?.message ?? '').toLowerCase()
+  if (message.includes('invalid login')) return 'invalid'
+  if (message.includes('already registered') || message.includes('already been registered')) return 'exists'
+  if (message.includes('password')) return 'weakPassword'
+  if (message.includes('email')) return 'invalidEmail'
+  if (message.includes('rate limit')) return 'tooMany'
+  return 'unknown'
 }
 
 export function AuthProvider({ children }) {
-  const [signedIn, setSignedIn] = useState(read)
+  const [session, setSession] = useState(null)
+  const [ready, setReady] = useState(!configured)
 
-  const signIn = useCallback(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, '1')
-    } catch {
-      /* private mode: sessie geldt dan alleen dit tabblad */
+  useEffect(() => {
+    if (!configured) return undefined
+
+    let alive = true
+    supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return
+      setSession(data.session ?? null)
+      setReady(true)
+    })
+
+    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+      setSession(next ?? null)
+    })
+
+    return () => {
+      alive = false
+      data.subscription.unsubscribe()
     }
-    setSignedIn(true)
   }, [])
 
-  const signOut = useCallback(() => {
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      /* niets te doen */
-    }
-    setSignedIn(false)
+  const signIn = useCallback(async (email, password) => {
+    if (!configured) return 'notConfigured'
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    return error ? codeFor(error) : null
   }, [])
 
-  const value = useMemo(() => ({ signedIn, signIn, signOut }), [signedIn, signIn, signOut])
+  const signUp = useCallback(async (email, password, name) => {
+    if (!configured) return 'notConfigured'
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { data: { name: name?.trim() || '' } },
+    })
+    if (error) return codeFor(error)
+    /* Zonder sessie staat bevestiging per mail aan en moet de gebruiker eerst klikken. */
+    return data.session ? null : 'confirmEmail'
+  }, [])
+
+  const signOut = useCallback(async () => {
+    if (configured) await supabase.auth.signOut()
+    setSession(null)
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      session,
+      user: session?.user ?? null,
+      signedIn: Boolean(session),
+      ready,
+      signIn,
+      signUp,
+      signOut,
+    }),
+    [session, ready, signIn, signUp, signOut],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
-  return useContext(AuthContext)
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth moet binnen AuthProvider staan')
+  return ctx
 }
 
 /** Stuurt terug naar /login als er geen sessie is. */
 export function RequireAuth({ children }) {
-  const { signedIn } = useAuth()
+  const { signedIn, ready } = useAuth()
   const location = useLocation()
+
+  /* Even wachten tot de sessie uit de browser is gelezen, anders flitst /login voorbij. */
+  if (!ready) return null
 
   if (!signedIn) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />

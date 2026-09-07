@@ -1,28 +1,41 @@
 import { useId, useState } from 'react'
 import { useI18n } from '../i18n'
+import { joinWaitlist } from '../app/store'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 /**
- * Wachtlijstformulier. Prototype: valideert en bevestigt, maar
- * verstuurt of bewaart nog niets. Eén plek om later een echte
- * endpoint aan te hangen -> handleSubmit.
+ * Wachtlijstformulier. Het adres gaat naar de tabel `waitlist` in Supabase.
+ * Daar mag iedereen in schrijven en niemand uit lezen, dus een bezoeker kan
+ * niet zien wie zich nog meer heeft aangemeld.
  */
 export default function WaitlistForm({ compact = false }) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const [busy, setBusy] = useState(false)
   const id = useId()
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
+    if (busy) return
     if (!EMAIL.test(email.trim())) {
       setError(t.waitlist.invalid)
       return
     }
+
     setError('')
-    setDone(true)
+    setBusy(true)
+    try {
+      await joinWaitlist(email.trim().toLowerCase(), lang)
+      setDone(true)
+    } catch (problem) {
+      console.error('Bundel: wachtlijst mislukt', problem.message)
+      setError(t.waitlist.failed)
+    } finally {
+      setBusy(false)
+    }
   }
 
   if (done) {
@@ -58,8 +71,8 @@ export default function WaitlistForm({ compact = false }) {
           </span>
         )}
       </div>
-      <button type="submit" className="btn btn--primary waitlist__submit">
-        {t.waitlist.submit}
+      <button type="submit" className="btn btn--primary waitlist__submit" disabled={busy}>
+        {busy ? t.waitlist.busy : t.waitlist.submit}
       </button>
       <span className="meta waitlist__note" id={`${id}-note`}>
         {t.waitlist.note}

@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "smoke": "vite build --ssr src/__smoke.jsx --outDir .smoke && node .smoke/__smoke.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
