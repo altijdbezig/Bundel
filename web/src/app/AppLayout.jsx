@@ -55,7 +55,7 @@ function UnreachableBanner() {
 function Shell() {
   const { t, lang } = useI18n()
   const { signOut } = useAuth()
-  const { done, status, noSources, readIds, notificationsOn } = useAppState()
+  const { done, status, noSources, readIds, notificationsOn, notifyKinds } = useAppState()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -65,7 +65,7 @@ function Shell() {
   const student = getStudent()
   const openCount = getAssignments(lang).filter((a) => !done[a.id]).length
   const sources = getSources(lang)
-  const notifications = getNotifications(lang)
+  const notifications = getNotifications(lang).filter((n) => notifyKinds[n.kind] !== false)
   const unread = notificationsOn ? notifications.filter((n) => !readIds.includes(n.id)).length : 0
 
   const badges = {

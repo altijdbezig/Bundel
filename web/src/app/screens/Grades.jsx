@@ -1,34 +1,69 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../../i18n'
-import { getAverage, getGrades, sourceColor, sourceName } from '../data'
 import EmptyState from '../EmptyState'
+import ScreenHeader from '../ScreenHeader'
+import Dialog, { DialogFacts, DialogSection } from '../Dialog'
 import { IconGrades } from '../../components/Icons'
+import { getAssignments, getAverage, getGrades, getGradeStats, sourceColor, sourceName } from '../data'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
+
+/* Staafhoogte: een 4 is laag, een 10 vult de hele balk. */
+const barHeight = (mark) => `${Math.max(8, ((mark - 3) / 7) * 100)}%`
+
+function Trend({ value, t }) {
+  if (value === 0) return null
+  const up = value > 0
+  return (
+    <span className={`trend ${up ? 'is-up' : 'is-down'}`} title={up ? t.app.grades.trendUp : t.app.grades.trendDown}>
+      <span aria-hidden="true">{up ? '▲' : '▼'}</span>
+      {Math.abs(value).toFixed(1)}
+    </span>
+  )
+}
 
 export default function Grades() {
   const { t, lang } = useI18n()
   const c = t.app.grades
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(null)
+
   const grades = getGrades(lang)
   const overall = getAverage()
+  const stats = getGradeStats(lang)
+
+  const detailAssignments = open ? getAssignments(lang).filter((a) => a.subjectKey === open.subjectKey) : []
+
+  function go(to) {
+    setOpen(null)
+    navigate(to)
+  }
 
   return (
     <div className="screen">
-      <header className="screen__head">
-        <div className="stack stack-2">
-          <h1 className="screen__title">{c.title}</h1>
-          <span className="meta row">
-            <span className="dot dot--sm" style={{ background: sourceColor('magister') }} />
-            {c.subtitle} · {sourceName('magister', lang)}
-          </span>
-        </div>
+      <ScreenHeader title={c.title} subtitle={`${c.subtitle} · ${sourceName('magister', lang)}`} source="magister">
         <div className="grades__overall">
           <span className="label">{c.overall}</span>
           <span className={`grades__overallValue data ${markClass(overall)}`}>{overall.toFixed(1)}</span>
         </div>
-      </header>
+      </ScreenHeader>
 
-      <section className="card stack">
-        {grades.length === 0 && (
+      {/* Onvoldoendes uitlichten */}
+      {(stats.failing.length > 0 || stats.lowMarks.length > 0) && (
+        <p className="notice">
+          <span className="dot dot--sm" style={{ background: 'var(--warn-dot)', marginTop: '6px' }} />
+          <span>
+            <strong>{c.attention}</strong>{' '}
+            {stats.failing.length > 0
+              ? fill(c.lowAverage, { subjects: stats.failing.map((g) => g.subject).join(', ') })
+              : fill(c.lowMark, { subjects: stats.lowMarks.map((g) => g.subject).join(', ') })}
+          </span>
+        </p>
+      )}
+
+      {grades.length === 0 && (
+        <section className="card">
           <EmptyState
             title={t.app.empty.grades}
             hint={t.app.empty.gradesHint}
@@ -36,32 +71,111 @@ export default function Grades() {
             linkLabel={t.app.empty.sourceLink}
             icon={IconGrades}
           />
-        )}
+        </section>
+      )}
 
+      {/* Kaart per vak */}
+      <div className="gradecards">
         {grades.map((g) => (
-          <div key={g.subject} className="grade">
-            <span className="grade__text">
-              <span className="grade__subject">{g.subject}</span>
-              <span className="meta">
-                {fill(g.count === 1 ? c.oneMark : c.marks, { count: g.count, last: g.last })}
+          <button key={g.subjectKey} type="button" className="card gradecard" onClick={() => setOpen(g)}>
+            <span className="label gradecard__subject">{g.subject}</span>
+
+            <span className="gradecard__top">
+              <span className={`gradecard__avg ${markClass(g.average)}`}>{g.average.toFixed(1)}</span>
+              <span className="stack stack-2 gradecard__side">
+                <span className="meta">{c.average}</span>
+                <Trend value={g.trend} t={t} />
               </span>
             </span>
 
-            <span className="grade__marks">
+            <span className="bars">
               {g.marks.map((m, i) => (
-                <span key={i} className={`grade__mark data ${markClass(m)}`}>
-                  {m.toFixed(1)}
+                <span key={i} className="bars__col">
+                  <span className="bars__track">
+                    <span className={`bars__fill ${markClass(m)}`} style={{ height: barHeight(m) }} />
+                  </span>
+                  <span className="bars__label data">{m.toFixed(1)}</span>
                 </span>
               ))}
             </span>
 
-            <span className="grade__average">
-              <span className={`grade__averageValue ${markClass(g.average)}`}>{g.average.toFixed(1)}</span>
-              <span className="label">{c.average}</span>
+            <span className="meta gradecard__foot">
+              {fill(g.count === 1 ? c.oneMark : c.marks, { count: g.count, last: g.last })}
             </span>
-          </div>
+          </button>
         ))}
+      </div>
+
+      {/* Verdeling van alle cijfers */}
+      <section className="card stack stack-3">
+        <div className="screen__cardHead">
+          <span className="label">{c.distribution}</span>
+          <span className="meta">{fill(c.distributionNote, { total: stats.total, subjects: grades.length })}</span>
+        </div>
+
+        <div className="dist">
+          {stats.buckets.map((b) => (
+            <div key={b.n} className="dist__col">
+              <span className="dist__count data">{b.count > 0 ? b.count : ''}</span>
+              <span className="dist__track">
+                <span
+                  className={`dist__fill ${b.n < 5 ? 'is-low' : b.n >= 8 ? 'is-high' : ''}`}
+                  style={{ height: `${stats.max ? (b.count / stats.max) * 100 : 0}%` }}
+                />
+              </span>
+              <span className="dist__label data">{b.n}</span>
+            </div>
+          ))}
+        </div>
       </section>
+
+      {/* Pop-up per vak */}
+      <Dialog
+        open={!!open}
+        onClose={() => setOpen(null)}
+        eyebrow={sourceName('magister', lang)}
+        dot={sourceColor('magister')}
+        title={open?.subject ?? ''}
+      >
+        {open && (
+          <>
+            <DialogFacts
+              items={[
+                { label: c.detail.average, value: open.average.toFixed(1) },
+                { label: c.detail.count, value: String(open.count) },
+                { label: c.detail.last, value: open.last },
+              ]}
+            />
+
+            <DialogSection title={c.detail.all} action={c.detail.toSchedule} onAction={() => go('/app/rooster')}>
+              <span className="grade__marks">
+                {open.marks.map((m, i) => (
+                  <span key={i} className={`grade__mark data ${markClass(m)}`}>
+                    {m.toFixed(1)}
+                  </span>
+                ))}
+              </span>
+            </DialogSection>
+
+            <DialogSection
+              title={c.detail.assignments}
+              action={c.detail.toAssignments}
+              onAction={() => go('/app/opdrachten')}
+            >
+              {detailAssignments.length === 0 && <p className="meta">{c.detail.noAssignments}</p>}
+              <div className="stack">
+                {detailAssignments.map((a) => (
+                  <div key={a.id} className="dlg__row">
+                    <span className="dot dot--sm" style={{ background: a.sourceColor }} />
+                    <span className="dlg__rowTitle">{a.title}</span>
+                    <span className="meta">{a.due}</span>
+                  </div>
+                ))}
+              </div>
+            </DialogSection>
+          </>
+        )}
+      </Dialog>
     </div>
   )
 }

@@ -4,8 +4,11 @@ import { fill, useI18n } from '../../i18n'
 import { useAppState } from '../state'
 import EmptyState from '../EmptyState'
 import LessonDialog from '../LessonDialog'
-import { IconCalendar, IconTasks } from '../../components/Icons'
-import { getAssignments, getGroups, getRecentGrades, getToday } from '../data'
+import ScreenHeader from '../ScreenHeader'
+import { IconCalendar } from '../../components/Icons'
+import { getGroups, getRecentGrades, getTimeline, getToday } from '../data'
+
+const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
 
 export default function Today() {
   const { t, lang } = useI18n()
@@ -14,78 +17,97 @@ export default function Today() {
   const c = t.app.today
 
   const today = getToday(lang)
-  const assignments = getAssignments(lang)
-  const open = assignments.filter((a) => !done[a.id])
+  const timeline = getTimeline(lang)
   const recent = getRecentGrades(lang)
   const group = getGroups(lang)[0]
 
+  const lessonCount = timeline.filter((i) => i.kind === 'lesson').length
+  const deadlineCount = timeline.filter((i) => i.kind === 'deadline').length
+
   return (
     <div className="screen">
-      <header className="screen__head">
-        <div className="stack stack-2">
-          <span className="label">{today.label}</span>
-          <h1 className="screen__title">{today.title}</h1>
-        </div>
-        <span className="meta">{fill(c.summary, { lessons: today.lessons.length, tasks: open.length })}</span>
-      </header>
+      <ScreenHeader
+        title={today.title}
+        subtitle={fill(c.summary, { lessons: lessonCount, tasks: deadlineCount })}
+      />
 
+      {/* ---------- De dag als tijdlijn: lessen en deadlines door elkaar ---------- */}
+      <section className="card stack stack-3">
+        <span className="label">{c.timeline}</span>
+
+        {timeline.length === 0 && <EmptyState title={c.nothing} icon={IconCalendar} />}
+
+        <ol className="tl">
+          {timeline.map((item) => {
+            const isLesson = item.kind === 'lesson'
+            const isDone = !isLesson && !!done[item.id]
+
+            return (
+              <li
+                key={item.key}
+                className={`tl__item ${item.now ? 'is-now' : ''} ${item.past && !item.now ? 'is-past' : ''}`}
+              >
+                <span className="tl__time data">{isLesson ? item.time : (item.dueTime ?? '')}</span>
+
+                <span className="tl__rail" aria-hidden="true">
+                  <span className={`tl__marker ${isLesson ? '' : 'is-deadline'}`} />
+                </span>
+
+                {isLesson ? (
+                  <button type="button" className="tl__body" onClick={() => setOpenLesson(item)}>
+                    <span className="tl__row">
+                      <span className="tl__title">{item.subject}</span>
+                      <span className="meta tl__room">{item.room}</span>
+                    </span>
+                    <span className="meta tl__sub">
+                      {item.time} tot {item.end} · {item.teacher}
+                    </span>
+                    {item.now && (
+                      <span className="tl__now">
+                        {item.remaining > 0
+                          ? fill(c.nowFor, { minutes: item.remaining })
+                          : fill(c.nowEnds, { time: item.end })}
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <span className={`tl__body tl__body--deadline ${isDone ? 'is-done' : ''}`}>
+                    <span className="tl__row">
+                      <span className="tl__titleRow">
+                        <button
+                          type="button"
+                          className={`task__check ${isDone ? 'is-checked' : ''}`}
+                          aria-label={t.app.assignments.markDone}
+                          aria-pressed={isDone}
+                          onClick={() => toggleDone(item.id)}
+                        />
+                        <span className="dot dot--sm" style={{ background: item.sourceColor }} title={item.sourceName} />
+                        <span className="tl__title">{item.title}</span>
+                      </span>
+                      <Link to="/app/opdrachten" className="meta">
+                        {c.all}
+                      </Link>
+                    </span>
+                    <span className="meta tl__sub">
+                      {c.deadline} · {item.subject} · {item.sourceName}
+                    </span>
+                  </span>
+                )}
+              </li>
+            )
+          })}
+        </ol>
+      </section>
+
+      {/* ---------- Cijfers en groep als tweede rij ---------- */}
       <div className="screen__cols">
         <section className="card stack stack-3">
-          <span className="label">{c.scheduleLabel}</span>
-          {today.lessons.length === 0 && (
-            <EmptyState title={t.app.empty.lessons} hint={t.app.empty.lessonsHint} icon={IconCalendar} />
-          )}
-
-          <div className="stack">
-            {today.lessons.map((l) => (
-              <button
-                type="button"
-                key={l.time}
-                className={`lesson ${l.now ? 'is-now' : ''}`}
-                onClick={() => setOpenLesson(l)}
-              >
-                <span className="lesson__time data">
-                  {l.time} - {l.end}
-                </span>
-                <span className="lesson__name">{l.subject}</span>
-                {l.now && <span className="badge badge--ok lesson__now">{c.now}</span>}
-                <span className="lesson__room meta">{l.room}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="card stack stack-3">
           <div className="screen__cardHead">
-            <span className="label">{c.tasksLabel}</span>
-            <Link to="/app/opdrachten" className="meta">
+            <span className="label">{c.recent}</span>
+            <Link to="/app/cijfers" className="meta">
               {c.all}
             </Link>
           </div>
-
-          {open.length === 0 ? (
-            <EmptyState title={t.app.empty.tasks} hint={t.app.empty.tasksHint} icon={IconTasks} />
-          ) : (
-            <div className="stack">
-              {open.slice(0, 4).map((a) => (
-                <div key={a.id} className="task">
-                  <button
-                    type="button"
-                    className="task__check"
-                    aria-label={t.app.assignments.markDone}
-                    onClick={() => toggleDone(a.id)}
-                  />
-                  <span className="dot dot--sm" style={{ background: a.sourceColor }} title={a.sourceName} />
-                  <span className="task__title">{a.title}</span>
-                  <span className={`task__due meta ${a.urgent ? 'is-urgent' : ''}`}>{a.due}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="card stack stack-3">
-          <span className="label">{c.recent}</span>
           <div className="stack stack-2">
             {recent.map((g) => (
               <div key={g.subject} className="recent">
@@ -93,9 +115,7 @@ export default function Today() {
                   <span className="recent__subject">{g.subject}</span>
                   <span className="meta">{g.what}</span>
                 </span>
-                <span className={`recent__mark data ${g.mark >= 8 ? 'is-high' : ''} ${g.mark < 5.5 ? 'is-low' : ''}`}>
-                  {g.mark.toFixed(1)}
-                </span>
+                <span className={`recent__mark data ${markClass(g.mark)}`}>{g.mark.toFixed(1)}</span>
               </div>
             ))}
           </div>
@@ -124,11 +144,7 @@ export default function Today() {
         </section>
       </div>
 
-      <LessonDialog
-        lesson={openLesson}
-        day={{ day: today.title, date: '' }}
-        onClose={() => setOpenLesson(null)}
-      />
+      <LessonDialog lesson={openLesson} day={{ day: today.title, date: '' }} onClose={() => setOpenLesson(null)} />
     </div>
   )
 }

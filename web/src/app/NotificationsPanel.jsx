@@ -8,10 +8,11 @@ import { getNotifications } from './data'
 export default function NotificationsPanel({ open, onClose }) {
   const { t, lang } = useI18n()
   const c = t.app.notifications
-  const { isRead, markRead, markAllRead, notificationsOn } = useAppState()
+  const { isRead, markRead, markAllRead, notificationsOn, notifyKinds } = useAppState()
   const navigate = useNavigate()
 
-  const items = getNotifications(lang)
+  /* Alleen de soorten die aan staan, zoals ingesteld bij Instellingen. */
+  const items = getNotifications(lang).filter((n) => notifyKinds[n.kind] !== false)
 
   useEffect(() => {
     if (!open) return

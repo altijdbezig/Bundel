@@ -70,8 +70,10 @@ Bundel/
       ├─ components/ Logo · Icons · Header · Footer · Reveal · AppPreview · WaitlistForm ·
       │              ContactCard
       ├─ auth.jsx    nep-sessie + RequireAuth
-      ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · EmptyState.jsx ·
-      │              SearchDialog.jsx · NotificationsPanel.jsx · screens/ (8 schermen)
+      ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · StartScreen.jsx ·
+      │              Dialog.jsx · ScreenHeader.jsx · EmptyState.jsx · LessonDialog.jsx ·
+      │              AssignmentDialog.jsx · SearchDialog.jsx · NotificationsPanel.jsx ·
+      │              screens/ (8 schermen)
       └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
 ```
 
@@ -234,6 +236,19 @@ alleen over de kolom van vandaag).
 De gekozen week staat in de URL als `?week=N`. Zoekresultaten voor een les linken daarnaartoe,
 anders opent het rooster op de verkeerde week.
 
+**Prompt 11: zes schermen herzien (12 vragen gesteld, 12 beantwoord)**
+
+| Scherm | Keuze |
+|---|---|
+| Ambitie | Stevig herzien: nieuwe indeling per scherm, binnen dezelfde tokens en merkstijl. |
+| Vandaag | Tijdlijn van de dag: lessen en deadlines door elkaar op volgorde van tijd, met de huidige les uitgelicht. Cijfers en groep als tweede rij. |
+| Opdrachten | Gegroepeerd per termijn (verlopen, vandaag, deze week, later, afgerond), balk met tellers die naar een groep springt, sorteren op datum of vak, afgerond apart, pop-up per opdracht. |
+| Cijfers | Kaart per vak met het gemiddelde groot, trendpijl en staafjes per cijfer. Verdeling van alle cijfers onderaan, onvoldoendes uitgelicht, pop-up per vak. |
+| Groepen | Projectruimte: leden, gedeelde deadline uit het vak, wie doet wat, bestanden, en een chat met datumscheiding. |
+| Bronnen | Per bron wat hij oplevert in aantallen, welke rechten Bundel vraagt, de laatste syncs en een knop nu synchroniseren. |
+| Instellingen | Secties Weergave, Meldingen, Account en Demo. Meldingen per soort, plus een keuze voor het startscherm. |
+| Consistentie | Overal dezelfde schermkop (`ScreenHeader`), dezelfde vensterschil (`Dialog`), de bronstip links van de titel, en lege staten in dezelfde vorm. |
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -324,3 +339,11 @@ anders opent het rooster op de verkeerde week.
   `getAssignments()` gaf de vaksleutel niet terug waardoor de pop-up nooit opdrachten toonde,
   `Number(params.get('week'))` werd 0 zonder parameter waardoor het rooster op week 35 opende,
   en twee deadlines vielen niet op een lesdag.
+- **prompt 11**: zes schermen herzien. Nieuwe gedeelde componenten `ScreenHeader.jsx`,
+  `Dialog.jsx` (met `DialogFacts` en `DialogSection`), `AssignmentDialog.jsx` en
+  `StartScreen.jsx`. `LessonDialog` gebruikt nu dezelfde schil. Datalaag uitgebreid met
+  `getTimeline()`, `assignmentTerm()`, `getSourceStats()`, `getGradeStats()`, `TODAY_DATE`,
+  een tijdstip per deadline, groepstaken, bestanden en een dag per bericht. `state.jsx` kreeg
+  meldingen per soort, groepstaken, het startscherm en een nep-sync per bron.
+  De rendertest ving dat 5.8 in Nederland een voldoende is, waardoor het uitlichten van
+  onvoldoendes nergens op reageerde. Eén cijfer aangepast naar 4.8 zodat die functie zichtbaar is.

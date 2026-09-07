@@ -17,6 +17,7 @@ import Grades from './app/screens/Grades'
 import Groups from './app/screens/Groups'
 import Sources from './app/screens/Sources'
 import Settings from './app/screens/Settings'
+import StartScreen from './app/StartScreen'
 import { RequireAuth } from './auth'
 import { useI18n } from './i18n'
 
@@ -124,7 +125,7 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<Today />} />
+          <Route index element={<StartScreen />} />
           <Route path="opdrachten" element={<Assignments />} />
           <Route path="rooster" element={<Schedule />} />
           <Route path="cijfers" element={<Grades />} />

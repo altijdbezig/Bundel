@@ -250,6 +250,7 @@ const ASSIGNMENTS = [
     source: 'canvas',
     due: t('vandaag 17:00', 'today 17:00'),
     dueDate: '07/09',
+    dueTime: '17:00',
     urgent: true,
   },
   {
@@ -259,6 +260,7 @@ const ASSIGNMENTS = [
     source: 'own',
     due: t('di 8 sep', 'Tue 8 Sep'),
     dueDate: '08/09',
+    dueTime: '12:00',
     urgent: true,
   },
   {
@@ -268,6 +270,7 @@ const ASSIGNMENTS = [
     source: 'canvas',
     due: t('wo 10 sep', 'Wed 10 Sep'),
     dueDate: '09/09',
+    dueTime: '17:00',
     urgent: false,
   },
   {
@@ -277,6 +280,7 @@ const ASSIGNMENTS = [
     source: 'teams',
     due: t('do 11 sep', 'Thu 11 Sep'),
     dueDate: '10/09',
+    dueTime: '23:59',
     urgent: false,
   },
   {
@@ -286,6 +290,7 @@ const ASSIGNMENTS = [
     source: 'magister',
     due: t('vr 12 sep', 'Fri 12 Sep'),
     dueDate: '11/09',
+    dueTime: '08:30',
     urgent: false,
   },
   {
@@ -295,6 +300,7 @@ const ASSIGNMENTS = [
     source: 'canvas',
     due: t('do 27 aug', 'Thu 27 Aug'),
     dueDate: '27/08',
+    dueTime: '17:00',
     urgent: false,
   },
   {
@@ -304,6 +310,7 @@ const ASSIGNMENTS = [
     source: 'canvas',
     due: t('do 3 sep', 'Thu 3 Sep'),
     dueDate: '03/09',
+    dueTime: '17:00',
     urgent: false,
   },
   {
@@ -313,6 +320,7 @@ const ASSIGNMENTS = [
     source: 'magister',
     due: t('ma 14 sep', 'Mon 14 Sep'),
     dueDate: '14/09',
+    dueTime: '09:00',
     urgent: false,
   },
   {
@@ -322,6 +330,7 @@ const ASSIGNMENTS = [
     source: 'teams',
     due: t('do 17 sep', 'Thu 17 Sep'),
     dueDate: '17/09',
+    dueTime: '13:00',
     urgent: false,
   },
   {
@@ -331,6 +340,7 @@ const ASSIGNMENTS = [
     source: 'canvas',
     due: t('wo 23 sep', 'Wed 23 Sep'),
     dueDate: '23/09',
+    dueTime: '17:00',
     urgent: false,
   },
   {
@@ -340,6 +350,7 @@ const ASSIGNMENTS = [
     source: 'canvas',
     due: t('vr 4 sep', 'Fri 4 Sep'),
     dueDate: '04/09',
+    dueTime: '17:00',
     urgent: false,
   },
 ]
@@ -348,7 +359,7 @@ const ASSIGNMENTS = [
 
 const GRADES = [
   { subject: 'ixd', last: t('laatste 4 sep', 'last 4 Sep'), marks: [7.5, 8.0, 8.0] },
-  { subject: 'theory', last: t('laatste 2 sep', 'last 2 Sep'), marks: [5.8, 7.0] },
+  { subject: 'theory', last: t('laatste 2 sep', 'last 2 Sep'), marks: [4.8, 7.0] },
   { subject: 'concepting', last: t('laatste 29 aug', 'last 29 Aug'), marks: [8.4, 8.0] },
   { subject: 'design', last: t('laatste 28 aug', 'last 28 Aug'), marks: [7.2, 6.8, 7.4] },
   { subject: 'english', last: t('laatste 26 aug', 'last 26 Aug'), marks: [8.0] },
@@ -373,12 +384,24 @@ const GROUPS = [
       { name: 'Noor Kramer', initials: 'NK', self: false },
       { name: 'Sam de Wit', initials: 'SW', self: false },
     ],
+    tasks: [
+      { id: 'gt1', who: 'LV', done: false, text: t('Vandaag-scherm bouwen', 'Build the Today screen') },
+      { id: 'gt2', who: 'JB', done: true, text: t('Tokenrefresh afmaken', 'Finish the token refresh') },
+      { id: 'gt3', who: 'NK', done: false, text: t('Moodboard samenstellen', 'Assemble the moodboard') },
+      { id: 'gt4', who: 'SW', done: false, text: t('Presentatie voorbereiden', 'Prepare the presentation') },
+    ],
+    files: [
+      { name: 'moodboard-v2.fig', by: 'NK', size: '4.2 MB', when: t('vandaag', 'today') },
+      { name: 'tokens.json', by: 'JB', size: '12 kB', when: t('gisteren', 'yesterday') },
+      { name: 'planning.pdf', by: 'LV', size: '180 kB', when: t('3 sep', '3 Sep') },
+    ],
     messages: [
       {
         id: 1,
         from: 'Jayden',
         initials: 'JB',
         time: '09:12',
+        day: t('Vandaag', 'Today'),
         self: false,
         text: t(
           'Tokenrefresh werkt. Canvas-assignments komen nu binnen als Task.',
@@ -390,6 +413,7 @@ const GROUPS = [
         from: 'Noor',
         initials: 'NK',
         time: '09:20',
+        day: t('Vandaag', 'Today'),
         self: false,
         text: t(
           'Top. Ik zet de deadlines in het moodboard zodat we ze kunnen tonen.',
@@ -401,6 +425,7 @@ const GROUPS = [
         from: 'Luca',
         initials: 'LV',
         time: '09:31',
+        day: t('Vandaag', 'Today'),
         self: true,
         text: t(
           'Ik pak vandaag het Vandaag-scherm. Rooster en taken naast elkaar.',
@@ -412,6 +437,7 @@ const GROUPS = [
         from: 'Jayden',
         initials: 'JB',
         time: '10:02',
+        day: t('Vandaag', 'Today'),
         self: false,
         text: t(
           'Denk aan de foutstatus per bron, niet de hele pagina leeg als Canvas plat gaat.',
@@ -428,12 +454,15 @@ const GROUPS = [
       { name: 'Luca Verhoeven', initials: 'LV', self: true },
       { name: 'Sam de Wit', initials: 'SW', self: false },
     ],
+    tasks: [{ id: 'gt5', who: 'SW', done: true, text: t('Bronnenlijst aanvullen', 'Extend the source list') }],
+    files: [{ name: 'bronnen.docx', by: 'SW', size: '46 kB', when: t('gisteren', 'yesterday') }],
     messages: [
       {
         id: 1,
         from: 'Sam',
         initials: 'SW',
-        time: 'gisteren',
+        time: '16:40',
+        day: t('Gisteren', 'Yesterday'),
         self: false,
         text: t('Ik heb de bronnenlijst aangevuld.', 'I added to the source list.'),
       },
@@ -586,6 +615,9 @@ export function getSubjectDetail(subjectKey, lang) {
   }
 }
 
+/* De datum van "vandaag" in de demo. */
+export const TODAY_DATE = '07/09'
+
 /* 'DD/MM' naar een getal, zodat opdrachten op datum kunnen staan. */
 const dateKey = (value) => {
   if (!value) return Number.MAX_SAFE_INTEGER
@@ -605,17 +637,78 @@ export function getAssignments(lang) {
   }))
 }
 
+/* De data van de huidige week, voor het bepalen van "deze week". */
+const CURRENT_WEEK_DATES = WEEKS[CURRENT_WEEK].days.map((d) => d.date)
+
+/**
+ * In welke bak een opdracht hoort: verlopen, vandaag, deze week of later.
+ * De schermen groeperen hierop, zodat de logica op een plek staat.
+ */
+export function assignmentTerm(dueDate) {
+  if (!dueDate) return 'later'
+  if (dueDate === TODAY_DATE) return 'today'
+  if (dateKey(dueDate) < dateKey(TODAY_DATE)) return 'overdue'
+  if (CURRENT_WEEK_DATES.includes(dueDate)) return 'week'
+  return 'later'
+}
+
+/**
+ * Lessen en deadlines van vandaag door elkaar, op volgorde van tijd.
+ * Dit is de kern van Bundel: niet gesorteerd op bron, maar op wanneer.
+ */
+export function getTimeline(lang) {
+  const day = getWeek(lang, CURRENT_WEEK)[TODAY_INDEX]
+
+  const lessons = day.lessons.map((l) => ({
+    ...l,
+    kind: 'lesson',
+    key: `l-${l.time}-${l.subjectKey}`,
+    at: l.start,
+    now: DEMO_NOW_MINUTES >= l.start && DEMO_NOW_MINUTES < l.finish,
+    past: DEMO_NOW_MINUTES >= l.finish,
+    remaining: Math.max(0, l.finish - DEMO_NOW_MINUTES),
+  }))
+
+  const deadlines = getAssignments(lang)
+    .filter((a) => a.dueDate === TODAY_DATE)
+    .map((a) => ({
+      ...a,
+      kind: 'deadline',
+      key: `d-${a.id}`,
+      at: toMinutes(a.dueTime ?? '17:00'),
+      past: DEMO_NOW_MINUTES >= toMinutes(a.dueTime ?? '17:00'),
+    }))
+
+  return [...lessons, ...deadlines].sort((a, b) => a.at - b.at)
+}
+
 export function getGrades(lang) {
   return GRADES.map((g) => {
     const average = g.marks.reduce((a, b) => a + b, 0) / g.marks.length
+    /* Trend: het laatste cijfer tegenover het cijfer daarvoor. */
+    const trend = g.marks.length > 1 ? g.marks[g.marks.length - 1] - g.marks[g.marks.length - 2] : 0
     return {
+      subjectKey: g.subject,
       subject: pick(SUBJECTS[g.subject], lang),
       last: pick(g.last, lang),
       marks: g.marks,
       average: Math.round(average * 10) / 10,
       count: g.marks.length,
+      trend: Math.round(trend * 10) / 10,
     }
   })
+}
+
+/** Verdeling van alle cijfers en de vakken die onder de 5.5 staan. */
+export function getGradeStats(lang) {
+  const all = GRADES.flatMap((g) => g.marks)
+  const buckets = [4, 5, 6, 7, 8, 9].map((n) => ({
+    n,
+    count: all.filter((m) => Math.floor(m) === n).length,
+  }))
+  const failing = getGrades(lang).filter((g) => g.average < 5.5)
+  const lowMarks = getGrades(lang).filter((g) => g.marks.some((m) => m < 5.5))
+  return { total: all.length, buckets, max: Math.max(...buckets.map((b) => b.count)), failing, lowMarks }
 }
 
 export function getAverage() {
@@ -634,9 +727,14 @@ export function getRecentGrades(lang) {
 export function getGroups(lang) {
   return GROUPS.map((g) => ({
     ...g,
+    subjectKey: g.subject,
     name: pick(g.name, lang),
     subject: pick(SUBJECTS[g.subject], lang),
-    messages: g.messages.map((m) => ({ ...m, text: pick(m.text, lang) })),
+    messages: g.messages.map((m) => ({ ...m, text: pick(m.text, lang), day: pick(m.day, lang) })),
+    tasks: g.tasks.map((task) => ({ ...task, text: pick(task.text, lang) })),
+    files: g.files.map((f) => ({ ...f, when: pick(f.when, lang) })),
+    /* De eerstvolgende openstaande opdracht voor het vak van deze groep. */
+    deadline: getAssignments(lang).find((a) => a.subjectKey === g.subject) ?? null,
   }))
 }
 
@@ -748,6 +846,90 @@ export function search(query, lang) {
   })
 
   return results
+}
+
+const PERMISSIONS = {
+  canvas: [
+    t('Cursussen waar jij in zit', 'Courses you are enrolled in'),
+    t('Opdrachten en inleverdata', 'Assignments and hand-in dates'),
+    t('Schrijft niets terug', 'Writes nothing back'),
+  ],
+  teams: [
+    t('Kanalen waar jij lid van bent', 'Channels you are a member of'),
+    t('Berichten in die kanalen', 'Messages in those channels'),
+    t('Geen chats van anderen', 'No chats belonging to others'),
+  ],
+  magister: [
+    t('Je rooster', 'Your timetable'),
+    t('Je cijfers', 'Your grades'),
+    t('Niets van klasgenoten', 'Nothing about classmates'),
+  ],
+  own: [
+    t('Je eigen taken en groepen', 'Your own tasks and groups'),
+    t('Berichten zijn end-to-end versleuteld', 'Messages are end-to-end encrypted'),
+    t('Blijft bij Bundel, gaat nergens heen', 'Stays with Bundel, goes nowhere else'),
+  ],
+}
+
+const SYNC_HISTORY = {
+  canvas: [
+    { time: '12:04', ok: true },
+    { time: '11:49', ok: true },
+    { time: '11:34', ok: false },
+  ],
+  teams: [
+    { time: '12:11', ok: true },
+    { time: '11:38', ok: true },
+    { time: '10:52', ok: true },
+  ],
+  magister: [
+    { time: '09:40', ok: true },
+    { time: 'gisteren', ok: true },
+  ],
+  own: [
+    { time: '12:12', ok: true },
+    { time: '12:09', ok: true },
+    { time: '12:01', ok: true },
+  ],
+}
+
+/**
+ * Wat elke bron bijdraagt, welke rechten Bundel vraagt en de laatste syncs.
+ * De aantallen worden uit de bestaande data geteld, niet apart bijgehouden.
+ */
+export function getSourceStats(lang) {
+  const lessons = WEEKS.flatMap((w) => w.days.flatMap((d) => d.lessons))
+  const marks = GRADES.reduce((n, g) => n + g.marks.length, 0)
+  const messages = GROUPS.reduce((n, g) => n + g.messages.length, 0)
+  const bySource = (key) => ASSIGNMENTS.filter((a) => a.source === key)
+
+  const counts = {
+    canvas: [
+      { label: pick(t('opdrachten', 'assignments'), lang), value: bySource('canvas').length },
+      { label: pick(t('vakken', 'subjects'), lang), value: new Set(bySource('canvas').map((a) => a.subject)).size },
+    ],
+    teams: [
+      { label: pick(t('opdrachten', 'assignments'), lang), value: bySource('teams').length },
+      { label: pick(t('kanalen', 'channels'), lang), value: GROUPS.length },
+    ],
+    magister: [
+      { label: pick(t('lessen', 'classes'), lang), value: lessons.length },
+      { label: pick(t('cijfers', 'grades'), lang), value: marks },
+    ],
+    own: [
+      { label: pick(t('taken', 'tasks'), lang), value: bySource('own').length },
+      { label: pick(t('berichten', 'messages'), lang), value: messages },
+    ],
+  }
+
+  return SOURCE_KEYS.reduce((acc, key) => {
+    acc[key] = {
+      counts: counts[key],
+      permissions: PERMISSIONS[key].map((line) => pick(line, lang)),
+      history: SYNC_HISTORY[key],
+    }
+    return acc
+  }, {})
 }
 
 /** Kleur van een bron, voor stippen en randjes. Nooit als vlak gebruiken. */

@@ -21,6 +21,18 @@ export function AppStateProvider({ children }) {
   const [sentMessages, setSentMessages] = useState({})
   const [readIds, setReadIds] = useState([])
   const [notificationsOn, setNotificationsOn] = useState(true)
+  const [groupTasks, setGroupTasks] = useState({})
+  const [syncing, setSyncing] = useState([])
+  const [syncedAt, setSyncedAt] = useState({})
+  const [startScreen, setStartScreen] = useState('/app')
+
+  /* Meldingen per soort. De kaartjes in data.js hebben een kind. */
+  const [notifyKinds, setNotifyKinds] = useState({
+    deadline: true,
+    grade: true,
+    message: true,
+    schedule: true,
+  })
 
   const value = useMemo(() => {
     const toggleDone = (id) => setDone((d) => ({ ...d, [id]: !d[id] }))
@@ -41,6 +53,21 @@ export function AppStateProvider({ children }) {
           { id: `own-${Date.now()}`, from: 'Luca', initials: 'LV', time: 'nu', self: true, text },
         ],
       }))
+
+    const toggleGroupTask = (id) => setGroupTasks((g) => ({ ...g, [id]: !g[id] }))
+
+    const toggleNotifyKind = (kind) => setNotifyKinds((k) => ({ ...k, [kind]: !k[kind] }))
+
+    /** Doet alsof een bron opnieuw ophaalt en zet de synctijd op nu. */
+    const syncNow = (key) => {
+      if (syncing.includes(key)) return
+      setSyncing((list) => [...list, key])
+      const stamp = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`
+      window.setTimeout(() => {
+        setSyncedAt((map) => ({ ...map, [key]: stamp }))
+        setSyncing((list) => list.filter((k) => k !== key))
+      }, 900)
+    }
 
     const status = (key) => {
       const s = sources[key]
@@ -66,6 +93,10 @@ export function AppStateProvider({ children }) {
       setSentMessages({})
       setReadIds([])
       setNotificationsOn(true)
+      setNotifyKinds({ deadline: true, grade: true, message: true, schedule: true })
+      setGroupTasks({})
+      setSyncedAt({})
+      setStartScreen('/app')
     }
 
     return {
@@ -86,9 +117,18 @@ export function AppStateProvider({ children }) {
       markAllRead,
       notificationsOn,
       setNotificationsOn,
+      notifyKinds,
+      toggleNotifyKind,
+      groupTasks,
+      toggleGroupTask,
+      syncing,
+      syncedAt,
+      syncNow,
+      startScreen,
+      setStartScreen,
       resetAll,
     }
-  }, [done, sources, sentMessages, readIds, notificationsOn])
+  }, [done, sources, sentMessages, readIds, notificationsOn, notifyKinds, groupTasks, syncing, syncedAt, startScreen])
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>
 }
