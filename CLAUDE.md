@@ -352,6 +352,26 @@ De herstellink brengt een token mee in de URL, dus `detectSessionInUrl` staat nu
 `src/supabase.js`. Zonder sessie op `/wachtwoord` toont de pagina dat de link verlopen is.
 Na het opslaan logt de app je uit, want anders zou je met de oude sessie doorlopen.
 
+**Prompt 18: instellingen gecontroleerd (geen vragen, wel een controle)**
+
+| Onderwerp | Uitkomst |
+|---|---|
+| Vercel-variabelen | Moeten type **Config** zijn, niet Secret. Alles met `VITE_` wordt tijdens het bouwen in de browsercode gezet, dus er valt niets geheim te houden. Vercel waarschuwt daar zelf voor. |
+| Omgevingen | Production, Preview en Development. Zonder Preview werkt inloggen niet op de proefversies van een branch. |
+| Opnieuw uitrollen | Nodig na het toevoegen. De waarden worden ingebakken tijdens het bouwen, dus alleen opslaan verandert niets. |
+| Confirm email | Staat uit. Gecontroleerd via `/auth/v1/settings`, daar staat `mailer_autoconfirm: true`. |
+| Werkverdeling | Benjamin doet Supabase, Jayden doet Vercel. |
+
+Live getest met een echt account tegen de echte database: aanmelden logt meteen in, de trigger
+maakt het profiel, de demodata wordt klaargezet (4 lessen op maandag, 11 opdrachten, 5 vakken
+met cijfers, 2 groepen, 18 aanwezigheidsregels), uitloggen en weer inloggen houdt een afgevinkte
+opdracht vast, er wordt niet dubbel gevuld, en een herstelmail wordt geaccepteerd. Die
+testgebruiker is daarna verwijderd, dus de database is weer leeg.
+
+Wat nog niet gecontroleerd is: het adres van de site op Vercel is hier niet bekend, dus of de
+gepubliceerde build de variabelen echt bevat is niet vastgesteld. `bundel.vercel.app` is de
+site van iemand anders. De Redirect URLs in Supabase zijn van buitenaf niet te lezen.
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -395,6 +415,9 @@ Na het opslaan logt de app je uit, want anders zou je met de oude sessie doorlop
 9. Blijft de standaard mailafzender van Supabase goed genoeg? Die is beperkt tot een paar
    berichten per uur. Zodra er echte gebruikers zijn is een eigen SMTP nodig.
 10. Wanneer gaat `demo.js` weg? Dat kan zodra de eerste echte koppeling de tabellen vult.
+11. Wat is het adres van de site op Vercel? Zonder dat adres is niet te controleren of de
+    gepubliceerde build de omgevingsvariabelen bevat, en kan het ook niet bij de Redirect URLs
+    in Supabase gezet worden.
 
 ## 6. Changelog
 
@@ -508,3 +531,8 @@ Na het opslaan logt de app je uit, want anders zou je met de oude sessie doorlop
   nieuwe pagina en controleert dat de knop wachtwoord vergeten op `/login` staat. Verder is de
   branch `Supabase` gepusht en samengevoegd met `main`. Eigen SMTP en inloggen met een
   Microsoft-account zijn bewust nog niet gedaan.
+- **prompt 18**: geen code veranderd, wel gecontroleerd. Uitgelegd wie wat instelt: Supabase
+  bij Benjamin, Vercel bij Jayden. De waarschuwing van Vercel over Secret tegenover Config
+  uitgezocht: `VITE_`-variabelen horen op Config, want ze komen sowieso in de browser terecht.
+  Daarna live geverifieerd dat aanmelden, de trigger, het vullen, opnieuw inloggen en het
+  bewaren werken, en dat Confirm email uit staat. Testgebruiker weer verwijderd.
