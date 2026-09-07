@@ -296,6 +296,17 @@ Alleen lessen die al geweest zijn hebben een status, dus de toekomst blijft leeg
 Eigen items leven in `state.jsx` en verdwijnen bij het herstarten van de demo, net als de rest.
 Bij een echte back-end worden dit de enige gegevens die Bundel zelf bewaart.
 
+**Prompt 15: onderkant van de zijbalk (3 vragen gesteld, 2 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Vorm | Accountknop onderaan met avatar, naam en opleiding. Klikken klapt een menu open met Instellingen, Naar de website en Uitloggen. |
+| Account bovenaan | Vervallen, want dat stond dan dubbel. De zijbalk begint nu met het logo en de navigatie. |
+| Uitloggen | Onderin het menu, met een scheidingslijn erboven zodat je hem niet per ongeluk raakt. Gewone kleur, want uitloggen is niet gevaarlijk. |
+| Extra's | Vraag niet beantwoord, dus bij de drie acties gehouden. Geen taalwissel of sneltoetsen in het menu. |
+
+Op mobiel blijft alleen de avatar staan en klapt het menu naar beneden open in plaats van omhoog.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -413,3 +424,6 @@ Bij een echte back-end worden dit de enige gegevens die Bundel zelf bewaart.
   eigen items mee. De rendertest ving twee fouten: `toMinutes('08:00')` is 480 en dus waar,
   waardoor een herinnering zonder eindtijd duur 0 kreeg in plaats van 30 minuten, en het
   bewerkformulier vulde zich pas in een effect waardoor het venster eerst leeg opende.
+- **prompt 15**: de drie kale links onderaan de zijbalk vervangen door een accountknop met een
+  menu. Het accountblok bovenaan is weg, want dat stond dubbel. Nieuw icoon `IconLogout`.
+  Menu sluit met Escape, met een klik ernaast en bij het wisselen van scherm.

@@ -12,6 +12,9 @@ import {
   IconSearch,
   IconBell,
   IconSettings,
+  IconGlobe,
+  IconLogout,
+  IconChevron,
 } from '../components/Icons'
 import { fill, useI18n } from '../i18n'
 import { useAuth } from '../auth'
@@ -68,6 +71,7 @@ function Shell() {
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
 
   const student = getStudent()
   const openCount = getAssignments(lang).filter((a) => !done[a.id]).length
@@ -96,7 +100,16 @@ function Shell() {
 
   useEffect(() => {
     setNotifOpen(false)
+    setAccountOpen(false)
   }, [location.pathname])
+
+  /* Het accountmenu sluit met Escape, net als de andere vensters. */
+  useEffect(() => {
+    if (!accountOpen) return
+    const onKey = (e) => e.key === 'Escape' && setAccountOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [accountOpen])
 
   function handleSignOut() {
     signOut()
@@ -113,14 +126,6 @@ function Shell() {
           <Mark size={22} />
           <span className="appshell__brandName">Bundel</span>
         </Link>
-
-        <div className="appshell__user">
-          <span className="appshell__avatar">{student.initials}</span>
-          <span className="appshell__userText">
-            <span className="appshell__userName">{student.name}</span>
-            <span className="appshell__userMeta">{getStudentCourse(lang)}</span>
-          </span>
-        </div>
 
         <nav className="appshell__nav" aria-label={t.nav.menu}>
           {NAV.map(({ to, end, key, Icon }) => (
@@ -165,15 +170,48 @@ function Shell() {
         </div>
 
         <div className="appshell__foot">
-          <NavLink to={SETTINGS_PATH} className="appshell__footLink">
-            {t.app.settings.title}
-          </NavLink>
-          <Link to="/" className="appshell__footLink">
-            {t.app.backToSite}
-          </Link>
-          <button type="button" className="appshell__footLink" onClick={handleSignOut}>
-            {t.app.signOut}
+          <button
+            type="button"
+            className={`account ${accountOpen ? 'is-open' : ''}`}
+            aria-expanded={accountOpen}
+            aria-haspopup="menu"
+            onClick={() => setAccountOpen((v) => !v)}
+          >
+            <span className="appshell__avatar">{student.initials}</span>
+            <span className="account__text">
+              <span className="account__name">{student.name}</span>
+              <span className="account__meta">{getStudentCourse(lang)}</span>
+            </span>
+            <span className="account__chev" aria-hidden="true">
+              <IconChevron size={16} />
+            </span>
           </button>
+
+          {accountOpen && (
+            <>
+              <button
+                type="button"
+                className="panel-backdrop"
+                aria-label={t.app.settings.title}
+                onClick={() => setAccountOpen(false)}
+              />
+              <div className="accountmenu" role="menu">
+                <NavLink to={SETTINGS_PATH} className="accountmenu__item" role="menuitem">
+                  <IconSettings size={17} />
+                  {t.app.settings.title}
+                </NavLink>
+                <Link to="/" className="accountmenu__item" role="menuitem">
+                  <IconGlobe size={17} />
+                  {t.app.backToSite}
+                </Link>
+                <hr className="hair" />
+                <button type="button" className="accountmenu__item" role="menuitem" onClick={handleSignOut}>
+                  <IconLogout size={17} />
+                  {t.app.signOut}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </aside>
 

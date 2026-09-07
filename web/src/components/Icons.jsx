@@ -191,6 +191,13 @@ export const IconInbox = (p) => (
   </Icon>
 )
 
+export const IconLogout = (p) => (
+  <Icon {...p}>
+    <path d="M14.5 4.5h3.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-3.5" />
+    <path d="M10 8.5L6 12l4 3.5M6 12h9" />
+  </Icon>
+)
+
 export const IconPresence = (p) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="8.5" />

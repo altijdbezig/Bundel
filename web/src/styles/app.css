@@ -86,17 +86,89 @@
 .appshell__sourceState.is-warn { color: var(--warn-dot); }
 .appshell__sourceState.is-off { color: var(--ink-500); }
 
-.appshell__foot { display: flex; flex-direction: column; gap: 4px; padding: 0 8px; }
-.appshell__footLink {
-  border: none;
+.appshell__foot { position: relative; }
+
+/* Accountknop onderaan de zijbalk */
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 11px;
   background: none;
-  padding: 4px 0;
   text-align: left;
-  font-size: 12.5px;
-  color: var(--ink-600);
   cursor: pointer;
+  min-width: 0;
+  transition: background-color 140ms ease, border-color 140ms ease;
 }
-.appshell__footLink:hover { color: var(--brand-700); text-decoration: underline; }
+.account:hover { background: var(--surface-card); border-color: var(--border-card); }
+.account.is-open { background: var(--surface-card); border-color: var(--border-strong); }
+.account__text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.account__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.account__meta {
+  font-size: 11px;
+  color: var(--ink-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.account__chev {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--ink-600);
+  transform: rotate(180deg);
+  transition: transform 160ms ease;
+}
+.account.is-open .account__chev { transform: rotate(0deg); }
+
+/* Het menu klapt boven de knop open, want hij staat onderaan */
+.accountmenu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-float);
+}
+.accountmenu .hair { margin: 4px 0; }
+.accountmenu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-800);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.accountmenu__item:hover {
+  background: var(--brand-50);
+  color: var(--brand-700);
+  text-decoration: none;
+}
 
 /* ---------------- Hoofdgebied ---------------- */
 .appshell__main {
@@ -134,8 +206,11 @@
     padding: var(--sp-3) var(--sp-4);
   }
   .appshell__nav,
-  .appshell__sources,
-  .appshell__foot { display: none; }
+  .appshell__sources { display: none; }
+  .appshell__foot { width: auto; max-width: 60%; }
+  .account__text { display: none; }
+  .account { padding: 4px; }
+  .accountmenu { bottom: auto; top: calc(100% + 8px); left: auto; right: 0; width: 220px; }
   .appshell__main { padding: var(--sp-4) var(--sp-4) 96px; }
 
   .appshell__tabbar {
