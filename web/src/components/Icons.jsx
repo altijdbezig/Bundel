@@ -191,6 +191,13 @@ export const IconInbox = (p) => (
   </Icon>
 )
 
+export const IconPresence = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M8.4 12.2l2.4 2.4 4.8-5" />
+  </Icon>
+)
+
 export const IconMicrosoft = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }} aria-hidden="true" focusable="false">
     <rect x="2.5" y="2.5" width="8.5" height="8.5" fill="#F25022" />

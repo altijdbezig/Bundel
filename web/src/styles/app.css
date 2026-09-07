@@ -1511,3 +1511,115 @@
   transition: background-color 140ms ease;
 }
 .dlg__row--button:hover { background: var(--surface-sunken); }
+
+/* ================================================================
+   Aanwezigheid
+   ================================================================ */
+.rate { display: flex; align-items: flex-end; gap: var(--sp-4); }
+.rate__value {
+  font-family: var(--font-mono);
+  font-size: 42px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.rate__value.is-high { color: var(--brand-700); }
+.rate__value.is-low { color: var(--warn-ink); }
+.rate__side { gap: 2px; padding-bottom: 4px; }
+
+.ratebar {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ink-100);
+  overflow: hidden;
+}
+.ratebar__fill { display: block; height: 100%; border-radius: 999px; background: var(--brand-500); }
+.ratebar__fill.is-high { background: var(--brand-600); }
+.ratebar__fill.is-low { background: var(--warn-dot); }
+
+.attcard { display: flex; flex-direction: column; gap: var(--sp-3); }
+.attcard.is-low { border-color: var(--warn-border); background: var(--warn-bg); }
+.attcard__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.attcard__rate { font-size: 30px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; }
+.attcard__rate.is-high { color: var(--brand-700); }
+.attcard__rate.is-low { color: var(--warn-ink); }
+.attcard__foot { margin-top: auto; }
+
+.att {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border-hair);
+  min-width: 0;
+}
+.att:last-child { border-bottom: none; }
+.att__date { color: var(--ink-600); width: 46px; flex: none; font-size: 11.5px; }
+.att__dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.att__dot.is-late { background: var(--warn-dot); }
+.att__dot.is-absent { background: var(--err-dot); }
+.att__dot.is-excused { background: var(--ink-300); }
+.att__dot.is-present { background: var(--brand-600); }
+.att__text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.att__subject {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.att__status { font-size: 12px; flex: none; text-align: right; }
+.att__status.is-late { color: var(--warn-ink); font-weight: 500; }
+.att__status.is-absent { color: var(--err-ink); font-weight: 600; }
+.att__status.is-excused { color: var(--ink-600); }
+
+/* ================================================================
+   Signaal in de lespop-up
+   ================================================================ */
+.signal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--warn-border);
+  border-left: 2px solid var(--warn-dot);
+  border-radius: var(--r-card);
+  background: var(--warn-bg);
+}
+.signal.is-high { border-left-width: 3px; }
+.signal__title { font-size: 14px; font-weight: 600; color: var(--warn-ink); }
+.signal__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.signal__list li {
+  position: relative;
+  padding-left: 17px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-800);
+}
+.signal__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 9px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--warn-dot);
+}
+.signal__note { font-size: 11.5px; color: var(--warn-ink); opacity: 0.85; }
+
+/* Aanwezigheid binnen een venster */
+.dlg__rate { display: flex; align-items: center; gap: var(--sp-4); }
+.dlg__rateValue { font-family: var(--font-mono); font-size: 26px; font-weight: 500; flex: none; }
+.dlg__rateValue.is-high { color: var(--brand-700); }
+.dlg__rateValue.is-low { color: var(--warn-ink); }
+.dlg__rateSide { flex: 1; min-width: 0; }

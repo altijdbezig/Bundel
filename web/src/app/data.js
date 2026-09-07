@@ -997,6 +997,7 @@ export function getSourceStats(lang) {
     magister: [
       { label: pick(t('lessen', 'classes'), lang), value: lessons.length },
       { label: pick(t('cijfers', 'grades'), lang), value: marks },
+      { label: pick(t('presenties', 'attendance records'), lang), value: getAttendance(lang).length },
     ],
     own: [
       { label: pick(t('taken', 'tasks'), lang), value: bySource('own').length },
@@ -1012,6 +1013,140 @@ export function getSourceStats(lang) {
     }
     return acc
   }, {})
+}
+
+// ---------------------------------------------------------------- aanwezigheid
+
+/**
+ * Aanwezigheid per les. Alleen lessen die al geweest zijn hebben een status.
+ * Alles wat hier niet staat was gewoon aanwezig, want dat is verreweg het
+ * meeste en dan blijft deze lijst leesbaar.
+ *
+ * Sleutel is "datum tijd", zoals '31/08 08:30'.
+ */
+const ATTENDANCE = {
+  '26/08 08:30': { status: 'excused', reason: t('Ziek gemeld', 'Reported sick') },
+  '28/08 10:00': { status: 'late', minutes: 8 },
+  '31/08 08:30': { status: 'late', minutes: 12 },
+  '01/09 11:15': { status: 'late', minutes: 5 },
+  '03/09 11:15': { status: 'absent' },
+}
+
+/* Onder dit percentage zegt de app er iets van. */
+export const ATTENDANCE_LIMIT = 80
+
+/* Een cijfer dat zoveel lager is dan het vorige telt als dalende trend. */
+const TREND_LIMIT = -0.5
+
+/** Is deze les al geweest? Alleen dan is er aanwezigheid. */
+function isPast(date, finish) {
+  if (dateKey(date) < dateKey(TODAY_DATE)) return true
+  if (date === TODAY_DATE) return DEMO_NOW_MINUTES >= finish
+  return false
+}
+
+/** Alle lessen die geweest zijn, met hun status, nieuwste eerst. */
+export function getAttendance(lang) {
+  const rows = []
+
+  WEEKS.forEach((_, weekIndex) => {
+    getWeek(lang, weekIndex).forEach((d) => {
+      d.lessons.forEach((l) => {
+        if (!isPast(d.date, l.finish)) return
+        const record = ATTENDANCE[`${d.date} ${l.time}`]
+        rows.push({
+          key: `${d.date}-${l.time}-${l.subjectKey}`,
+          date: d.date,
+          day: d.day,
+          time: l.time,
+          end: l.end,
+          room: l.room,
+          teacher: l.teacher,
+          subject: l.subject,
+          subjectKey: l.subjectKey,
+          status: record?.status ?? 'present',
+          minutes: record?.minutes ?? null,
+          reason: record?.reason ? pick(record.reason, lang) : null,
+        })
+      })
+    })
+  })
+
+  return rows.sort((a, b) => dateKey(b.date) - dateKey(a.date) || toMinutes(b.time) - toMinutes(a.time))
+}
+
+/** Telt een status als aanwezig? Te laat wel, gemeld afwezig telt niet mee. */
+const countsAsPresent = (status) => status === 'present' || status === 'late'
+
+function summarise(rows) {
+  const excused = rows.filter((r) => r.status === 'excused').length
+  const counted = rows.length - excused
+  const attended = rows.filter((r) => countsAsPresent(r.status)).length
+  return {
+    total: rows.length,
+    counted,
+    attended,
+    late: rows.filter((r) => r.status === 'late').length,
+    absent: rows.filter((r) => r.status === 'absent').length,
+    excused,
+    /* Gemelde absentie telt niet tegen je, dus die valt uit de noemer. */
+    rate: counted === 0 ? 100 : Math.round((attended / counted) * 100),
+  }
+}
+
+/** Percentage over alles en per vak, met een markering waar het te laag is. */
+export function getAttendanceSummary(lang) {
+  const rows = getAttendance(lang)
+  const keys = [...new Set(rows.map((r) => r.subjectKey))]
+
+  const bySubject = keys
+    .map((key) => {
+      const own = rows.filter((r) => r.subjectKey === key)
+      return {
+        subjectKey: key,
+        subject: own[0].subject,
+        teacher: own[0].teacher,
+        ...summarise(own),
+        low: summarise(own).rate < ATTENDANCE_LIMIT,
+      }
+    })
+    .sort((a, b) => a.rate - b.rate)
+
+  return { ...summarise(rows), bySubject }
+}
+
+/** Aanwezigheid voor één vak, voor de lespop-up. */
+export function getSubjectAttendance(subjectKey, lang) {
+  return getAttendanceSummary(lang).bySubject.find((s) => s.subjectKey === subjectKey) ?? null
+}
+
+/**
+ * Gaat dit vak slecht? Geeft de redenen terug die daar aanleiding toe geven,
+ * zodat het scherm ze kan tonen in plaats van een oordeel te verzinnen.
+ * `doneMap` komt uit de schermtoestand, want afgevinkte opdrachten tellen niet.
+ */
+export function getSubjectSignal(subjectKey, lang, doneMap = {}) {
+  const reasons = []
+  const grade = getGrades(lang).find((g) => g.subjectKey === subjectKey)
+  const attendance = getSubjectAttendance(subjectKey, lang)
+  const overdue = getAssignments(lang).filter(
+    (a) => a.subjectKey === subjectKey && !doneMap[a.id] && assignmentTerm(a.dueDate) === 'overdue',
+  )
+
+  if (grade && grade.average < 5.5) {
+    reasons.push({ kind: 'average', value: grade.average.toFixed(1) })
+  }
+  if (grade && grade.trend <= TREND_LIMIT) {
+    reasons.push({ kind: 'trend', value: Math.abs(grade.trend).toFixed(1) })
+  }
+  if (attendance && attendance.low) {
+    reasons.push({ kind: 'attendance', value: attendance.rate, attended: attendance.attended, counted: attendance.counted })
+  }
+  if (overdue.length > 0) {
+    reasons.push({ kind: 'overdue', value: overdue.length })
+  }
+
+  return { level: reasons.length >= 2 ? 'high' : reasons.length === 1 ? 'low' : 'none', reasons }
 }
 
 /** Kleur van een bron, voor stippen en randjes. Nooit als vlak gebruiken. */

@@ -74,7 +74,7 @@ Bundel/
       │              Dialog.jsx · ScreenHeader.jsx · EmptyState.jsx · LessonDialog.jsx ·
       │              AssignmentDialog.jsx · GradeDialog.jsx · SearchDialog.jsx ·
       │              NotificationsPanel.jsx ·
-      │              screens/ (8 schermen)
+      │              screens/ (9 schermen, incl. Attendance)
       └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
 ```
 
@@ -264,9 +264,25 @@ Elk cijfer is nu een eigen invoer in plaats van een los getal:
 het rekent. Cijfers met een opmerking krijgen een klein teken in de lijst, en zoeken vindt
 cijfers op hun naam en op de tekst van de opmerking.
 
+**Prompt 13: aanwezigheid en een signaal per vak (8 vragen gesteld, 8 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Scherm | Totaal bovenaan, kaart per vak met een balk, daaronder alleen de momenten die afweken. |
+| Statussen | Aanwezig, te laat (met minuten), afgemeld (met reden), afwezig zonder melding. |
+| Rekenregel | Te laat telt als aanwezig. Afgemeld valt uit de noemer, want dat telt niet tegen je. |
+| Grens | Onder 80% bij een vak krijgt dat vak een markering. |
+| Signaal | Blok bovenaan in de lespop-up, feitelijk, met de redenen op een rij. |
+| Redenen | Gemiddelde onder 5.5, laatste cijfer 0.5 of meer lager dan het vorige, aanwezigheid onder 80%, verlopen opdrachten. |
+| Elders | Alleen in de lespop-up, niet in het rooster zelf en niet op Vandaag. |
+| Navigatie | Zeven items in de zijbalk, Aanwezigheid naast Cijfers. De mobiele onderbalk blijft op zes. |
+
+De demo staat zo dat Mediatheorie het probleemvak is: een 4.8 als cijfer en 75% aanwezigheid.
+Alleen lessen die al geweest zijn hebben een status, dus de toekomst blijft leeg.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
-`/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
+`/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
 **Home-secties:** hero + app-preview, bronnenstrip, probleem, oplossing/functies (`#functies`),
 "wat Bundel niet doet", privacyblok, platforms, FAQ, wachtlijst (`#wachtlijst`).
 
@@ -368,3 +384,9 @@ cijfers op hun naam en op de tekst van de opmerking.
   `getRecentGrades()` leidt de lijst nu af uit de invoeren, dus de losse `RECENT_GRADES` is weg.
   De rendertest ving dat `getSourceStats()` nog `g.marks.length` telde, een veld dat na de
   omzetting niet meer bestond; daardoor crashte het scherm Bronnen volledig.
+- **prompt 13**: nieuw scherm `/app/aanwezigheid` en een signaalblok in de lespop-up.
+  Datalaag kreeg `ATTENDANCE` (afwijkingen per les, de rest is aanwezig), `getAttendance()`,
+  `getAttendanceSummary()`, `getSubjectAttendance()`, `getSubjectSignal()` en
+  `ATTENDANCE_LIMIT`. `getSubjectSignal()` neemt de afgevinkte opdrachten mee, dus het signaal
+  verdwijnt zodra je een verlopen opdracht afvinkt. `AppLayout` splitst nu `NAV` (zijbalk, zeven)
+  en `TABS` (onderbalk, zes). Nieuw icoon `IconPresence`.

@@ -12,6 +12,7 @@ const START_SCREENS = [
   { to: '/app/opdrachten', key: 'assignments' },
   { to: '/app/rooster', key: 'schedule' },
   { to: '/app/cijfers', key: 'grades' },
+  { to: '/app/aanwezigheid', key: 'attendance' },
 ]
 
 function Row({ title, body, children }) {

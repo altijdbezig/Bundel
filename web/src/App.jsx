@@ -16,6 +16,7 @@ import Schedule from './app/screens/Schedule'
 import Grades from './app/screens/Grades'
 import Groups from './app/screens/Groups'
 import Sources from './app/screens/Sources'
+import Attendance from './app/screens/Attendance'
 import Settings from './app/screens/Settings'
 import StartScreen from './app/StartScreen'
 import { RequireAuth } from './auth'
@@ -33,6 +34,7 @@ const TITLES = {
     '/app/opdrachten': 'Opdrachten · Bundel',
     '/app/rooster': 'Rooster · Bundel',
     '/app/cijfers': 'Cijfers · Bundel',
+    '/app/aanwezigheid': 'Aanwezigheid · Bundel',
     '/app/groepen': 'Groepen · Bundel',
     '/app/bronnen': 'Bronnen · Bundel',
     '/app/instellingen': 'Instellingen · Bundel',
@@ -48,6 +50,7 @@ const TITLES = {
     '/app/opdrachten': 'Assignments · Bundel',
     '/app/rooster': 'Timetable · Bundel',
     '/app/cijfers': 'Grades · Bundel',
+    '/app/aanwezigheid': 'Attendance · Bundel',
     '/app/groepen': 'Groups · Bundel',
     '/app/bronnen': 'Sources · Bundel',
     '/app/instellingen': 'Settings · Bundel',
@@ -129,6 +132,7 @@ export default function App() {
           <Route path="opdrachten" element={<Assignments />} />
           <Route path="rooster" element={<Schedule />} />
           <Route path="cijfers" element={<Grades />} />
+          <Route path="aanwezigheid" element={<Attendance />} />
           <Route path="groepen" element={<Groups />} />
           <Route path="bronnen" element={<Sources />} />
           <Route path="instellingen" element={<Settings />} />

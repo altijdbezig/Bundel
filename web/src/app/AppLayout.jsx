@@ -8,6 +8,7 @@ import {
   IconGrades,
   IconGroups,
   IconSources,
+  IconPresence,
   IconSearch,
   IconBell,
   IconSettings,
@@ -20,14 +21,20 @@ import SearchDialog from './SearchDialog'
 import NotificationsPanel from './NotificationsPanel'
 import Onboarding from './screens/Onboarding'
 
+/* De zijbalk toont alles. Aanwezigheid staat naast Cijfers, want ze horen bij elkaar. */
 const NAV = [
   { to: '/app', end: true, key: 'today', Icon: IconToday },
   { to: '/app/opdrachten', key: 'assignments', Icon: IconTasks },
   { to: '/app/rooster', key: 'schedule', Icon: IconCalendar },
   { to: '/app/cijfers', key: 'grades', Icon: IconGrades },
+  { to: '/app/aanwezigheid', key: 'attendance', Icon: IconPresence },
   { to: '/app/groepen', key: 'groups', Icon: IconGroups },
   { to: '/app/bronnen', key: 'sources', Icon: IconSources },
 ]
+
+/* De onderbalk op mobiel blijft op zes, anders wordt elk tabje te smal.
+   Aanwezigheid is daar bereikbaar via Cijfers en via zoeken. */
+const TABS = NAV.filter((item) => item.key !== 'attendance')
 
 const SETTINGS_PATH = '/app/instellingen'
 
@@ -206,7 +213,7 @@ function Shell() {
       </div>
 
       <nav className="appshell__tabbar" aria-label={t.nav.menu}>
-        {NAV.map(({ to, end, key, Icon }) => (
+        {TABS.map(({ to, end, key, Icon }) => (
           <NavLink
             key={to}
             to={to}

@@ -2,9 +2,32 @@ import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../i18n'
 import { useAppState } from './state'
 import Dialog, { DialogFacts, DialogSection } from './Dialog'
-import { getSubjectDetail, sourceColor, sourceName } from './data'
+import {
+  getSubjectAttendance,
+  getSubjectDetail,
+  getSubjectSignal,
+  sourceColor,
+  sourceName,
+  ATTENDANCE_LIMIT,
+} from './data'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
+const rateClass = (rate) => (rate < ATTENDANCE_LIMIT ? 'is-low' : rate === 100 ? 'is-high' : '')
+
+/**
+ * Vertaalt de redenen uit getSubjectSignal naar leesbare zinnen.
+ * Bundel noemt wat het ziet en laat het oordeel aan de student.
+ */
+function signalLine(reason, t) {
+  const r = t.app.signal.reasons
+  if (reason.kind === 'overdue') {
+    return fill(reason.value === 1 ? r.overdue : r.overduePlural, { value: reason.value })
+  }
+  if (reason.kind === 'attendance') {
+    return fill(r.attendance, { value: reason.value, attended: reason.attended, counted: reason.counted })
+  }
+  return fill(r[reason.kind], { value: reason.value })
+}
 
 /**
  * Venster met alles wat bij een les hoort: de les zelf, de opdrachten voor
@@ -20,6 +43,8 @@ export default function LessonDialog({ lesson, day, onClose }) {
   if (!lesson) return null
 
   const detail = getSubjectDetail(lesson.subjectKey, lang)
+  const signal = getSubjectSignal(lesson.subjectKey, lang, done)
+  const attendance = getSubjectAttendance(lesson.subjectKey, lang)
   const minutes = lesson.finish - lesson.start
   const length =
     minutes < 60
@@ -39,6 +64,21 @@ export default function LessonDialog({ lesson, day, onClose }) {
       dot={sourceColor('magister')}
       title={lesson.subject}
     >
+      {/* Signaal bovenaan: alleen als er echt iets is, met de reden erbij. */}
+      {signal.reasons.length > 0 && (
+        <div className={`signal ${signal.level === 'high' ? 'is-high' : ''}`}>
+          <span className="signal__title">
+            {signal.reasons.length > 1 ? t.app.signal.title : t.app.signal.titleOne}
+          </span>
+          <ul className="signal__list">
+            {signal.reasons.map((reason) => (
+              <li key={reason.kind}>{signalLine(reason, t)}</li>
+            ))}
+          </ul>
+          <span className="signal__note">{t.app.signal.note}</span>
+        </div>
+      )}
+
       <DialogFacts
         items={[
           { label: c.when, value: `${day ? `${day.day} ${day.date}` : ''} ${lesson.time} - ${lesson.end}`.trim() },
@@ -78,6 +118,28 @@ export default function LessonDialog({ lesson, day, onClose }) {
           </div>
         )}
       </DialogSection>
+
+      {attendance && (
+        <DialogSection title={t.app.attendance.title} action={t.app.attendance.title} onAction={() => go('/app/aanwezigheid')}>
+          <div className="dlg__rate">
+            <span className={`dlg__rateValue ${rateClass(attendance.rate)}`}>{attendance.rate}%</span>
+            <span className="stack stack-2 dlg__rateSide">
+              <span className="ratebar">
+                <span
+                  className={`ratebar__fill ${rateClass(attendance.rate)}`}
+                  style={{ width: `${attendance.rate}%` }}
+                />
+              </span>
+              <span className="meta">
+                {fill(t.app.attendance.ofLessons, { attended: attendance.attended, counted: attendance.counted })}
+                {attendance.late > 0 || attendance.absent > 0
+                  ? ` · ${fill(t.app.attendance.counts, { late: attendance.late, absent: attendance.absent })}`
+                  : ''}
+              </span>
+            </span>
+          </div>
+        </DialogSection>
+      )}
 
       <DialogSection
         title={c.group}
