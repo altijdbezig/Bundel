@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Download from './pages/Download'
 import Privacy from './pages/Privacy'
 import About from './pages/About'
+import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
 import { useI18n } from './i18n'
 
@@ -17,6 +18,7 @@ const TITLES = {
     '/download': 'Downloaden · Bundel',
     '/privacy': 'Privacy · Bundel',
     '/over': 'Over Bundel',
+    '/voorwaarden': 'Voorwaarden · Bundel',
   },
   en: {
     '/': 'Bundel · timetable, assignments and grades side by side',
@@ -24,6 +26,7 @@ const TITLES = {
     '/download': 'Download · Bundel',
     '/privacy': 'Privacy · Bundel',
     '/over': 'About Bundel',
+    '/voorwaarden': 'Terms · Bundel',
   },
 }
 
@@ -74,6 +77,7 @@ export default function App() {
           <Route path="/download" element={<Download />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/over" element={<About />} />
+          <Route path="/voorwaarden" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

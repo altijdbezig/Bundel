@@ -62,13 +62,14 @@ Bundel/
 │  └─ Prototype/Bundel.dc.html                app-prototype, desktop + mobiel
 └─ web/                                       de website (prompt 1)
    ├─ README.md                               draaien, structuur, wat nog niet werkt
-   ├─ index.html · vite.config.js · package.json
+   ├─ index.html · vite.config.js · package.json · vercel.json
    ├─ public/  favicon.svg · _redirects
    └─ src/
       ├─ main.jsx · App.jsx · i18n.jsx
       ├─ styles/   tokens.css · global.css · layout.css
-      ├─ components/ Logo · Icons · Header · Footer · Reveal · AppPreview · WaitlistForm
-      └─ pages/    Home · Login · Download · Privacy · About · NotFound
+      ├─ components/ Logo · Icons · Header · Footer · Reveal · AppPreview · WaitlistForm ·
+      │              ContactCard
+      └─ pages/    Home · Login · Download · Privacy · Terms · About · NotFound
 ```
 
 `.dc.html` = Claude Design canvas-bestanden (React via `support.js`, `x-dc` templates).
@@ -138,7 +139,19 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 | Doelgroep | Elke student wiens school Canvas, Teams of Magister gebruikt |
 | Em dashes | Overal weg, ook uit branding kit en prototype. Zie regel 2 hierboven. |
 
-**Routes:** `/` · `/login` · `/download` · `/privacy` · `/over` · 404-fallback.
+**Prompt 3: hosting, voorwaarden en placeholders (4 vragen gesteld, 4 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Domeinnaam | Nog geen. De nep-URL `bundel.app` is uit de app-preview gehaald; daar staat nu alleen "Bundel". |
+| Hosting | Vercel. Root Directory in het Vercel-project op `web` zetten, de rest staat in `vercel.json`. Railway blijft over voor de back-end. |
+| Voorwaarden | Nieuwe pagina `/voorwaarden`, kort en eerlijk, zes kopjes. Link staat in de footer. |
+| Contactgegevens | Zichtbaar gemarkeerde placeholder `[contactadres volgt]` in een gestippeld kader, op `/privacy` en `/voorwaarden`. |
+| Desktop-app | Electron, omdat het deze React-code hergebruikt. De systeemeisen op `/download` kloppen daarmee. Tauri was het alternatief (installer ~10 MB, maar Rust nodig). |
+| EN-teksten | Akkoord, geen herziening nodig. |
+| AltijdBezig | Geen logo en geen eigen site, dus alleen de naam als tekst. |
+
+**Routes:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Home-secties:** hero + app-preview, bronnenstrip, probleem, oplossing/functies (`#functies`),
 "wat Bundel niet doet", privacyblok, platforms, FAQ, wachtlijst (`#wachtlijst`).
 
@@ -151,17 +164,15 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 
 ## 5. Openstaande vragen
 
-1. Komt er een echte domeinnaam (`bundel.app`, `bundel.nl`, iets anders)? Nu staat `bundel.app`
-   als voorbeeld in de app-preview.
-2. Waar wordt de site gehost: GitHub Pages, Netlify, Vercel, eigen server? Dat bepaalt of de
-   `_redirects` klopt of dat er een andere SPA-fallback nodig is.
-3. Moet er een voorwaardenpagina komen? De footer verwijst er nu niet naar.
-4. Komt er een contactadres voor privacyvragen? Nu staat er alleen "AltijdBezig, de makers van Bundel".
-5. Wil je een cookiemelding? Nu niet nodig, er is geen tracking en geen analytics.
-6. Moeten de EN-teksten door jou nagelezen worden, of is de vertaling akkoord?
-7. Wordt de desktop-app Electron of iets anders? Dat bepaalt de systeemeisen op `/download`
-   (nu ingevuld met aannames: Windows 10+, macOS 12+, ~250 MB).
-8. Heeft AltijdBezig een eigen logo of site waar Bundel naar mag linken?
+1. Welk contactadres komt er? Zolang dat er niet is blijft `[contactadres volgt]` zichtbaar op
+   `/privacy` en `/voorwaarden`. Invullen in `contact.emailPlaceholder` in `src/i18n.jsx`,
+   daarna de `.placeholder`-opmaak en de `note` weghalen.
+2. Zodra er een domein is: instellen in Vercel en eventueel de titel in `index.html` bijwerken.
+3. Wil je een cookiemelding? Nu niet nodig, er is geen tracking en geen analytics.
+4. Moeten de voorwaarden door iemand nagekeken worden voordat de site echt live gaat?
+5. Wie zet het Vercel-project op, jij of je projectpartner? Vergeet Root Directory `web` niet.
+6. Komt er een wachtwoord-vergeten-stroom? De link op `/login` wijst nu naar `#wachtwoord` en
+   doet nog niets.
 
 ## 6. Changelog
 
@@ -174,3 +185,8 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
   `CLAUDE.md`, 2 in `App.jsx`, 1 in `index.html`, 1 in `README.md`. Nieuwe permanente regel:
   nooit em dashes (regel 2). FAQ over prijs en over school herschreven voor de bredere
   doelgroep. `about.eyebrow` toegevoegd aan de vertalingen.
+- **prompt 3**: `/voorwaarden` toegevoegd (nieuwe pagina `Terms.jsx`, zes kopjes, NL en EN,
+  link in de footer). `ContactCard.jsx` met zichtbaar gemarkeerde placeholder op `/privacy` en
+  `/voorwaarden`. `vercel.json` toegevoegd met SPA-rewrite; hostinguitleg in `web/README.md`.
+  Nep-domein uit de app-preview gehaald. Electron vastgelegd als richting voor de desktop-app.
+  Werk gecommit op `Front-end` en gepusht naar GitHub.

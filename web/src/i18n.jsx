@@ -191,6 +191,45 @@ export const nl = {
     ],
   },
 
+  terms: {
+    title: 'Voorwaarden',
+    updated: 'Laatst bijgewerkt: september 2026',
+    intro: 'Korte afspraken over het gebruik van Bundel. Geen juridische mist, want Bundel is nog in ontwikkeling en we beloven liever niets wat we niet kunnen waarmaken.',
+    sections: [
+      {
+        h: 'Wat je mag verwachten',
+        p: 'Bundel toont je rooster, opdrachten, cijfers en projectgroep uit de systemen die je zelf koppelt. We doen ons best om dat kloppend en op tijd te tonen, en we vertellen het als een bron niet bereikbaar is.',
+      },
+      {
+        h: 'Wat we niet beloven',
+        p: 'Bundel is in ontwikkeling. Er kunnen storingen zijn, functies kunnen veranderen of verdwijnen en gegevens kunnen achterlopen op de bron. Gebruik Bundel dus als overzicht, niet als enige bewijs dat je iets op tijd hebt ingeleverd. Bij twijfel is het bronsysteem leidend.',
+      },
+      {
+        h: 'Je account en je schoolsystemen',
+        p: 'Je koppelt Bundel met je eigen schoolaccount en je blijft zelf verantwoordelijk voor de regels van je school. Deel je inloggegevens niet en koppel geen account dat niet van jou is.',
+      },
+      {
+        h: 'Wat je met Bundel mag doen',
+        p: 'Bundel gebruiken voor je eigen studie, gratis. Niet toegestaan: de app namaken of doorverkopen, geautomatiseerd gegevens van anderen ophalen, of proberen bij data te komen die niet van jou is.',
+      },
+      {
+        h: 'Stoppen',
+        p: 'Je kunt elke bron loskoppelen en je account laten verwijderen wanneer je wil. Daarmee verdwijnt wat we van je bewaren. Wij kunnen Bundel ook stoppen of pauzeren; dan laten we dat vooraf weten via het adres waarmee je je hebt aangemeld.',
+      },
+      {
+        h: 'Wijzigingen',
+        p: 'Veranderen deze voorwaarden, dan passen we deze pagina aan en zetten we de datum bovenaan bij. Gaat het om iets belangrijks, dan krijg je bericht.',
+      },
+    ],
+  },
+
+  contact: {
+    label: 'Contact',
+    intro: 'Vragen over privacy, over deze voorwaarden of over Bundel zelf gaan naar AltijdBezig.',
+    emailPlaceholder: '[contactadres volgt]',
+    note: 'Er is nog geen contactadres ingesteld. Vul dit in voordat de site live gaat.',
+  },
+
   about: {
     title: 'Over Bundel',
     lead: 'Bundel wordt gemaakt door AltijdBezig. Het begon met een irritatie die elke student herkent: je moet vier apps openen om te weten wat je vandaag moet doen.',
@@ -424,6 +463,45 @@ export const en = {
         p: 'Privacy questions go to AltijdBezig, the makers of Bundel.',
       },
     ],
+  },
+
+  terms: {
+    title: 'Terms',
+    updated: 'Last updated: September 2026',
+    intro: 'Short agreements about using Bundel. No legal fog, because Bundel is still in development and we would rather promise nothing we cannot deliver.',
+    sections: [
+      {
+        h: 'What you can expect',
+        p: 'Bundel shows your timetable, assignments, grades and project group from the systems you connect yourself. We do our best to show that correctly and on time, and we tell you when a source is unreachable.',
+      },
+      {
+        h: 'What we do not promise',
+        p: 'Bundel is in development. There can be outages, features can change or disappear, and data can lag behind the source. So use Bundel as an overview, not as your only proof that you handed something in on time. When in doubt, the source system decides.',
+      },
+      {
+        h: 'Your account and your school systems',
+        p: 'You connect Bundel with your own school account and you stay responsible for your school rules. Do not share your credentials and do not connect an account that is not yours.',
+      },
+      {
+        h: 'What you may do with Bundel',
+        p: 'Use Bundel for your own studies, free of charge. Not allowed: copying or reselling the app, harvesting other people data automatically, or trying to reach data that is not yours.',
+      },
+      {
+        h: 'Stopping',
+        p: 'You can disconnect any source and have your account deleted whenever you want. That removes what we keep about you. We can also stop or pause Bundel; if we do, we let you know beforehand at the address you signed up with.',
+      },
+      {
+        h: 'Changes',
+        p: 'If these terms change we update this page and the date at the top. If it is something important, you get a notice.',
+      },
+    ],
+  },
+
+  contact: {
+    label: 'Contact',
+    intro: 'Questions about privacy, about these terms or about Bundel itself go to AltijdBezig.',
+    emailPlaceholder: '[contact address to follow]',
+    note: 'No contact address has been set yet. Fill this in before the site goes live.',
   },
 
   about: {

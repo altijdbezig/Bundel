@@ -21,7 +21,10 @@ export default function Footer() {
     },
     {
       title: t.footer.legal,
-      items: [{ label: t.footer.links.privacy, to: '/privacy' }],
+      items: [
+        { label: t.footer.links.privacy, to: '/privacy' },
+        { label: t.footer.links.terms, to: '/voorwaarden' },
+      ],
     },
   ]
 

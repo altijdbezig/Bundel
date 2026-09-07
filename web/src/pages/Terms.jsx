@@ -1,22 +1,26 @@
+import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import ContactCard from '../components/ContactCard'
 import { useI18n } from '../i18n'
 
-export default function Privacy() {
+export default function Terms() {
   const { t } = useI18n()
-  const p = t.privacy
+  const v = t.terms
 
   return (
     <section className="section">
       <div className="page prose">
         <Reveal className="stack stack-4 prose__head">
-          <span className="label">{p.updated}</span>
-          <h1 className="title-1">{p.title}</h1>
-          <p className="body-lg measure">{p.intro}</p>
+          <span className="label">{v.updated}</span>
+          <h1 className="title-1">{v.title}</h1>
+          <p className="body-lg measure">{v.intro}</p>
+          <Link to="/privacy" className="meta">
+            {t.footer.links.privacy}
+          </Link>
         </Reveal>
 
         <div className="stack stack-5 prose__body">
-          {p.sections.map((s, i) => (
+          {v.sections.map((s, i) => (
             <Reveal key={s.h} className="stack stack-2" delay={i * 50}>
               <h2 className="heading">{s.h}</h2>
               <p className="body measure-lg">{s.p}</p>

@@ -74,7 +74,7 @@ export default function AppPreview() {
         <span className="preview__dot" />
         <span className="preview__dot" />
         <span className="preview__dot" />
-        <span className="preview__url data">bundel.app</span>
+        <span className="preview__url">Bundel</span>
       </div>
 
       <div className="preview__body">
