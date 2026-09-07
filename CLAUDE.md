@@ -66,10 +66,12 @@ Bundel/
    ├─ public/  favicon.svg · _redirects
    └─ src/
       ├─ main.jsx · App.jsx · i18n.jsx
-      ├─ styles/   tokens.css · global.css · layout.css
+      ├─ styles/   tokens.css · global.css · layout.css · app.css
       ├─ components/ Logo · Icons · Header · Footer · Reveal · AppPreview · WaitlistForm ·
       │              ContactCard
-      └─ pages/    Home · Login · Download · Privacy · Terms · About · NotFound
+      ├─ auth.jsx    nep-sessie + RequireAuth
+      ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · screens/ (6 schermen)
+      └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
 ```
 
 `.dc.html` = Claude Design canvas-bestanden (React via `support.js`, `x-dc` templates).
@@ -162,7 +164,20 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 | Cookiemelding | Niet nodig zolang er geen tracking is. |
 | Merge naar main | Ja. Projectpartner is nog niet begonnen, dus `Front-end` is samengevoegd met `main`. |
 
-**Routes:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
+**Prompt 5: app-schermen en hero (6 vragen gesteld, 6 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| App-data | Nepdata achter een datalaag: `src/app/data.js`. Schermen roepen alleen `getToday()`, `getAssignments()` en zo verder aan. Bij het aansluiten van de API alleen de bodies van die functies vervangen. |
+| Routes in de app | Eigen URL per scherm onder `/app`. |
+| Omvang | Alle zes de schermen, plus zijbalk en mobiele onderbalk. |
+| Toegang | Nep-sessie als poort. Inloggen zet een vlag in `localStorage`, `RequireAuth` stuurt terug naar `/login`. |
+| Hero | Inloggen is de enige grote knop, downloaden staat als tekstlink eronder. |
+| Taalkeuze in de app | Data komt tweetalig uit de datalaag, UI-labels staan onder `app` in `i18n.jsx`. |
+
+**Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
+**Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
+`/app/bronnen`, alle achter `RequireAuth`.
 **Home-secties:** hero + app-preview, bronnenstrip, probleem, oplossing/functies (`#functies`),
 "wat Bundel niet doet", privacyblok, platforms, FAQ, wachtlijst (`#wachtlijst`).
 
@@ -170,6 +185,12 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 - Alle zichtbare tekst staat in `src/i18n.jsx`, in `nl` én `en`. Nergens losse strings in componenten.
 - Alle kleuren via `var(--…)`. Geen losse hexwaarden in `layout.css`.
 - Wat nog niet echt werkt is per onderdeel gemarkeerd in `web/README.md` (tabel).
+- Nepdata hoort in `src/app/data.js` en nergens anders. Schermen bevatten geen lijstjes.
+- De app-demo heeft een eigen layout zonder site-header en site-footer. `SiteLayout` in
+  `App.jsx` geldt alleen voor de publieke pagina's.
+- Rendertest zonder browser: bouw met `npx vite build --ssr` en render de routes en schermen
+  met `react-dom/server`. De Chrome-extensie blokkeert localhost, dus dit is de manier om te
+  controleren dat er niets crasht.
 - Controle voor je klaar bent: `grep -rnP "\x{2014}" .` moet leeg zijn buiten `node_modules`,
   `dist` en `support.js` (dat is gegenereerde Claude Design runtime, gemarkeerd als do not edit).
 
@@ -206,3 +227,10 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
   `Front-end` samengevoegd met `main` en beide gepusht. Rest van de antwoorden vroeg geen
   codewijziging: contactadres blijft een placeholder, geen cookiemelding, voorwaarden
   worden niet nagekeken.
+- **prompt 5**: app-demo gebouwd achter `/app`. Zes schermen (Vandaag, Opdrachten, Rooster,
+  Cijfers, Groepen, Bronnen), zijbalk op desktop en onderbalk op mobiel, storingsbalk als een
+  bron onbereikbaar is. Datalaag `src/app/data.js` met alle nepdata uit het prototype,
+  tweetalig. Nep-sessie in `src/auth.jsx`: inloggen accepteert elk geldig adres en opent de
+  demo, `RequireAuth` schermt `/app` af. Hero aangepast: inloggen is de enige grote knop,
+  downloaden staat als tekstlink eronder. Header wijst naar `/app` zodra je bent ingelogd.
+  Alle routes en schermen server-side gerenderd als test, alles rendert.

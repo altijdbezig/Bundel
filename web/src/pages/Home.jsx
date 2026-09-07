@@ -44,15 +44,14 @@ export default function Home() {
             <span className="label">{h.eyebrow}</span>
             <h1 className="display">{h.title}</h1>
             <p className="body-lg measure">{h.lead}</p>
-            <div className="row">
-              <Link to="/login" className="btn btn--primary btn--lg">
+            <div className="hero__cta">
+              <Link to="/login" className="btn btn--primary btn--lg hero__primary">
                 {h.ctaLogin}
               </Link>
-              <Link to="/download" className="btn btn--secondary btn--lg">
-                {h.ctaDownload}
-              </Link>
+              <span className="meta hero__secondary">
+                <Link to="/download">{h.ctaDownload}</Link> · {h.ctaHint}
+              </span>
             </div>
-            <span className="meta">{h.ctaHint}</span>
           </Reveal>
 
           <Reveal className="hero__visual" delay={120}>

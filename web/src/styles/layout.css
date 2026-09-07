@@ -112,6 +112,9 @@
   align-items: center;
 }
 .hero__copy { max-width: 34em; }
+.hero__cta { display: flex; flex-direction: column; gap: var(--sp-3); align-items: flex-start; }
+.hero__primary { padding: 0 28px; }
+.hero__secondary a { font-weight: 500; }
 .hero__visual { min-width: 0; }
 
 @media (max-width: 1000px) {

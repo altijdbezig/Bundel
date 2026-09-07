@@ -39,6 +39,12 @@ web/
    │  ├─ AppPreview.jsx       nagebouwd "Vandaag"-scherm voor de hero
    │  ├─ WaitlistForm.jsx     wachtlijst (valideert, bewaart nog niets)
    │  └─ ContactCard.jsx      contactblok met zichtbare placeholder
+   ├─ app/                    de app-demo achter /app
+   │  ├─ data.js             ALLE nepdata plus de getters (enige plek om te vervangen)
+   │  ├─ state.jsx           afgevinkte taken en bronstatus, alleen in het geheugen
+   │  ├─ AppLayout.jsx       zijbalk, mobiele onderbalk, storingsbalk
+   │  └─ screens/            Today · Assignments · Schedule · Grades · Groups · Sources
+   ├─ auth.jsx               nep-sessie plus RequireAuth
    └─ pages/
       ├─ Home.jsx             /
       ├─ Login.jsx            /login
@@ -83,6 +89,21 @@ Bewust, dit is de front-end van een prototype:
 | Downloads | knoppen uitgeschakeld | `pages/Download.jsx` → `aria-disabled` vervangen door `href` |
 | App Store / Play | badges uitgeschakeld | idem, zodra de store-URL bestaat |
 | Contactadres | `[contactadres volgt]` op /privacy en /voorwaarden | `contact.emailPlaceholder` in `src/i18n.jsx` |
+| Sessie | elk adres plus wachtwoord opent /app | `signIn` in `src/auth.jsx` |
+| App-data | nepdata uit één bestand | de functies onderaan `src/app/data.js` |
+
+## De app-demo
+
+`/app` zit achter een nep-sessie: inloggen zet een vlag in de browser en stuurt je door.
+Zonder die vlag word je teruggestuurd naar `/login`. Uitloggen kan linksonder in de app.
+
+De zes schermen halen hun data uit `src/app/data.js`. Dat bestand is de enige plek met
+nepdata. De schermen roepen alleen `getToday()`, `getAssignments()` en zo verder aan en weten
+niet waar het vandaan komt. Voor het aansluiten van de echte API vervang je de bodies van die
+functies en houd je de vorm van wat ze teruggeven gelijk. Dan hoeft geen enkel scherm open.
+
+Op `/app/bronnen` kun je bronnen koppelen, verbreken en een storing simuleren. Dat laatste
+zet de gele balk bovenaan aan, zodat je ziet hoe de app zich houdt als Canvas plat gaat.
 
 ## Teksten wijzigen
 

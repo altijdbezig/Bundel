@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Circles } from '../components/Logo'
 import { IconMicrosoft } from '../components/Icons'
 import { useI18n } from '../i18n'
+import { useAuth } from '../auth'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 /**
- * Inlogscherm - visueel af, nog niet aangesloten.
- * Zodra er een auth-backend is: vervang handleSubmit en de
- * schoolaccount-knop door echte aanroepen.
+ * Inlogscherm. Er is nog geen auth-backend, dus elke invoer die er goed
+ * uitziet opent de demo. Zodra de back-end er is: vervang signIn() hier en
+ * in ../auth.jsx door echte aanroepen. De rest kan blijven staan.
  */
 export default function Login() {
   const { t } = useI18n()
@@ -17,6 +18,16 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
   const [notice, setNotice] = useState('')
+  const { signIn } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const target = location.state?.from ?? '/app'
+
+  function enterDemo() {
+    signIn()
+    navigate(target, { replace: true })
+  }
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -24,7 +35,7 @@ export default function Login() {
     if (!EMAIL.test(email.trim())) next.email = t.login.invalidEmail
     if (!password) next.password = t.login.emptyPassword
     setErrors(next)
-    setNotice(Object.keys(next).length === 0 ? t.login.attempted : '')
+    if (Object.keys(next).length === 0) enterDemo()
   }
 
   return (
@@ -38,7 +49,7 @@ export default function Login() {
 
           <p className="notice auth__notice">{t.login.prototypeNotice}</p>
 
-          <button type="button" className="btn btn--secondary btn--block btn--lg auth__sso" onClick={() => setNotice(t.login.attempted)}>
+          <button type="button" className="btn btn--secondary btn--block btn--lg auth__sso" onClick={enterDemo}>
             <IconMicrosoft size={17} />
             {t.login.school}
           </button>

@@ -117,11 +117,10 @@ export const nl = {
     submit: 'Inloggen',
     noAccount: 'Nog geen account?',
     joinWaitlist: 'Zet je op de wachtlijst',
-    prototypeNotice: 'Dit is een ontwerpprototype. Inloggen werkt nog niet, want er is nog geen account om op in te loggen.',
+    prototypeNotice: 'Ontwerpprototype. Er is nog geen echte auth, dus elk e-mailadres en wachtwoord werkt. Je komt in een demo met nepdata.',
     invalidEmail: 'Vul een volledig e-mailadres in.',
     emptyPassword: 'Vul je wachtwoord in.',
-    attempted: 'Inloggen is nog niet actief. De webversie is in ontwikkeling.',
-    forgotNotice: 'Wachtwoord herstellen kan zodra het inloggen echt werkt.',
+    forgotNotice: 'Wachtwoord herstellen kan zodra de echte auth er is. Vul in de demo iets willekeurigs in.',
     quote: 'Drie apps, één overzicht. En je data blijft waar hij hoort.',
     quoteBy: 'De belofte van Bundel',
     aside: [
@@ -229,6 +228,83 @@ export const nl = {
     intro: 'Vragen over privacy, over deze voorwaarden of over Bundel zelf gaan naar AltijdBezig.',
     emailPlaceholder: '[contactadres volgt]',
     note: 'Er is nog geen contactadres ingesteld. Vul dit in voordat de site live gaat.',
+  },
+
+  app: {
+    nav: {
+      today: 'Vandaag',
+      assignments: 'Opdrachten',
+      schedule: 'Rooster',
+      grades: 'Cijfers',
+      groups: 'Groepen',
+      sources: 'Bronnen',
+    },
+    demo: 'Demo met nepdata. Je bent niet echt ingelogd en er wordt niets bewaard.',
+    signOut: 'Uitloggen',
+    backToSite: 'Naar de website',
+    sourcesLabel: 'Bronnen',
+    unreachable: '{source} is niet bereikbaar. Je ziet de laatste sync van {time}. Nieuwe wijzigingen komen zodra de bron terug is.',
+    retry: 'Opnieuw',
+
+    today: {
+      scheduleLabel: 'Rooster vandaag',
+      tasksLabel: 'Deze week af',
+      all: 'alles',
+      summary: '{lessons} lessen · {tasks} deadlines',
+      now: 'nu bezig',
+      recent: 'Laatste cijfers',
+      groupLabel: 'Je groep',
+      allDone: 'Niets meer open deze week.',
+    },
+
+    assignments: {
+      title: 'Opdrachten',
+      subtitle: '{open} open · {done} afgerond',
+      filterAll: 'Alle',
+      done: 'afgerond',
+      empty: 'Geen opdrachten van deze bron.',
+      markDone: 'Afvinken',
+    },
+
+    schedule: {
+      title: 'Rooster',
+      subtitle: 'Week van 7 september',
+      empty: 'Geen les.',
+      today: 'vandaag',
+    },
+
+    grades: {
+      title: 'Cijfers',
+      subtitle: 'Uit Magister, alleen-lezen',
+      average: 'gemiddeld',
+      overall: 'Gemiddelde over alles',
+      marks: '{count} cijfers · {last}',
+      oneMark: '1 cijfer · {last}',
+    },
+
+    groups: {
+      title: 'Groepen',
+      members: 'leden',
+      linkedTo: 'gekoppeld aan',
+      placeholder: 'Bericht aan de groep',
+      send: 'Versturen',
+      encrypted: 'End-to-end versleuteld. Wij kunnen niet meelezen.',
+    },
+
+    sources: {
+      title: 'Bronnen',
+      subtitle: 'Wat Bundel uitleest en wanneer voor het laatst',
+      connected: 'gekoppeld',
+      unreachable: 'onbereikbaar',
+      notConnected: 'niet gekoppeld',
+      connect: 'Koppelen',
+      disconnect: 'Verbreken',
+      lastSync: 'Laatste sync',
+      never: 'nog niet',
+      simulate: 'Storing simuleren',
+      restore: 'Storing opheffen',
+      demoNote: 'De knoppen hieronder veranderen alleen deze demo. Er wordt niets echt gekoppeld of verbroken.',
+    },
   },
 
   about: {
@@ -392,11 +468,10 @@ export const en = {
     submit: 'Log in',
     noAccount: 'No account yet?',
     joinWaitlist: 'Join the waiting list',
-    prototypeNotice: 'This is a design prototype. Logging in does not work yet, because there is no account to log in to.',
+    prototypeNotice: 'Design prototype. There is no real auth yet, so any email and password works. You land in a demo with placeholder data.',
     invalidEmail: 'Enter a complete email address.',
     emptyPassword: 'Enter your password.',
-    attempted: 'Logging in is not active yet. The web version is in development.',
-    forgotNotice: 'Password recovery will work as soon as logging in does.',
+    forgotNotice: 'Password recovery arrives with the real auth. In this demo, type anything.',
     quote: 'Three apps, one overview. And your data stays where it belongs.',
     quoteBy: 'The promise of Bundel',
     aside: [
@@ -506,6 +581,83 @@ export const en = {
     note: 'No contact address has been set yet. Fill this in before the site goes live.',
   },
 
+  app: {
+    nav: {
+      today: 'Today',
+      assignments: 'Assignments',
+      schedule: 'Timetable',
+      grades: 'Grades',
+      groups: 'Groups',
+      sources: 'Sources',
+    },
+    demo: 'Demo with placeholder data. You are not really logged in and nothing is stored.',
+    signOut: 'Log out',
+    backToSite: 'Back to the website',
+    sourcesLabel: 'Sources',
+    unreachable: '{source} is unreachable. You are seeing the last sync from {time}. New changes arrive once the source is back.',
+    retry: 'Retry',
+
+    today: {
+      scheduleLabel: "Today's timetable",
+      tasksLabel: 'Due this week',
+      all: 'all',
+      summary: '{lessons} classes · {tasks} deadlines',
+      now: 'in progress',
+      recent: 'Latest grades',
+      groupLabel: 'Your group',
+      allDone: 'Nothing left this week.',
+    },
+
+    assignments: {
+      title: 'Assignments',
+      subtitle: '{open} open · {done} done',
+      filterAll: 'All',
+      done: 'done',
+      empty: 'No assignments from this source.',
+      markDone: 'Mark as done',
+    },
+
+    schedule: {
+      title: 'Timetable',
+      subtitle: 'Week of 7 September',
+      empty: 'No classes.',
+      today: 'today',
+    },
+
+    grades: {
+      title: 'Grades',
+      subtitle: 'From Magister, read-only',
+      average: 'average',
+      overall: 'Average across everything',
+      marks: '{count} grades · {last}',
+      oneMark: '1 grade · {last}',
+    },
+
+    groups: {
+      title: 'Groups',
+      members: 'members',
+      linkedTo: 'linked to',
+      placeholder: 'Message the group',
+      send: 'Send',
+      encrypted: 'End-to-end encrypted. We cannot read along.',
+    },
+
+    sources: {
+      title: 'Sources',
+      subtitle: 'What Bundel reads and when it last did',
+      connected: 'connected',
+      unreachable: 'unreachable',
+      notConnected: 'not connected',
+      connect: 'Connect',
+      disconnect: 'Disconnect',
+      lastSync: 'Last sync',
+      never: 'not yet',
+      simulate: 'Simulate outage',
+      restore: 'End outage',
+      demoNote: 'The buttons below only change this demo. Nothing is really connected or disconnected.',
+    },
+  },
+
   about: {
     title: 'About Bundel',
     lead: 'Bundel is made by AltijdBezig. It started with an irritation every student recognises: you have to open four apps to know what today looks like.',
@@ -553,6 +705,11 @@ export const en = {
 }
 
 const dictionaries = { nl, en }
+
+/** Vult {plaatshouders} in een vertaalde zin: fill(t.app.today.summary, { lessons: 4 }) */
+export function fill(template, vars) {
+  return String(template).replace(/\{(\w+)\}/g, (match, key) => (key in vars ? String(vars[key]) : match))
+}
 
 const I18nContext = createContext({ lang: 'nl', t: nl, setLang: () => {} })
 

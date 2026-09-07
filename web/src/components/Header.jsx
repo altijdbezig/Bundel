@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import Logo from './Logo'
 import { useI18n } from '../i18n'
+import { useAuth } from '../auth'
 
 function LangToggle() {
   const { lang, setLang, t } = useI18n()
@@ -24,6 +25,7 @@ function LangToggle() {
 
 export default function Header() {
   const { t } = useI18n()
+  const { signedIn } = useAuth()
   const [open, setOpen] = useState(false)
   const location = useLocation()
 
@@ -69,8 +71,8 @@ export default function Header() {
           <Link to="/download" className="btn btn--secondary site-header__download">
             {t.nav.download}
           </Link>
-          <Link to="/login" className="btn btn--primary">
-            {t.nav.login}
+          <Link to={signedIn ? '/app' : '/login'} className="btn btn--primary">
+            {signedIn ? t.app.nav.today : t.nav.login}
           </Link>
         </div>
 
@@ -107,8 +109,8 @@ export default function Header() {
             <Link to="/download" className="btn btn--secondary btn--block">
               {t.nav.download}
             </Link>
-            <Link to="/login" className="btn btn--primary btn--block">
-              {t.nav.login}
+            <Link to={signedIn ? '/app' : '/login'} className="btn btn--primary btn--block">
+              {signedIn ? t.app.nav.today : t.nav.login}
             </Link>
             <LangToggle />
           </div>
