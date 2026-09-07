@@ -2,9 +2,13 @@ import { useI18n } from '../../i18n'
 import { IconTasks } from '../../components/Icons'
 import { getWeek, getWeekBounds, sourceColor, DEMO_NOW_MINUTES } from '../data'
 
-/* Hoogte van het raster: pixels per minuut. Een les van 50 min wordt zo 55px. */
-const PX_PER_MINUTE = 1.1
+/* Hoogte van het raster: pixels per minuut. Een les van 50 min wordt zo 65px,
+   net genoeg voor tijd, vak en lokaal zonder dat de tekst uit het blok loopt. */
+const PX_PER_MINUTE = 1.3
 const PADDING_MINUTES = 30
+
+/* Onder deze duur laat het blok de docent weg, anders past het niet. */
+const SHORT_LESSON = 55
 
 const toClock = (minutes) =>
   `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
@@ -69,8 +73,10 @@ export default function Schedule() {
           {week.map((d) => (
             <div key={d.date} className={`sched__dayHead ${d.today ? 'is-today' : ''}`}>
               <span className="sched__dayName">{d.day}</span>
-              <span className="sched__dayDate data">{d.date}</span>
-              {d.today && <span className="badge badge--ok sched__todayBadge">{c.today}</span>}
+              <span className="sched__daySub">
+                <span className="sched__dayDate data">{d.date}</span>
+                {d.today && <span className="badge badge--ok sched__todayBadge">{c.today}</span>}
+              </span>
             </div>
           ))}
         </div>
@@ -83,21 +89,24 @@ export default function Schedule() {
 
           {/* Tijdbalk links */}
           <div className="sched__rail">
-            {hours.map((m) => (
-              <span key={m} className="sched__hour data" style={{ top: `${offset(m)}px` }}>
-                {toClock(m)}
-              </span>
-            ))}
+            {hours
+              .filter((m) => !nowVisible || Math.abs(m - now) > 20)
+              .map((m) => (
+                <span key={m} className="sched__hour data" style={{ top: `${offset(m)}px` }}>
+                  {toClock(m)}
+                </span>
+              ))}
           </div>
 
           {week.map((d) => (
             <div key={d.date} className={`sched__col ${d.today ? 'is-today' : ''}`}>
               {d.lessons.map((l) => {
                 const isNow = d.today && now >= l.start && now < l.finish
+                const short = l.finish - l.start < SHORT_LESSON
                 return (
                   <article
                     key={l.time + l.subjectKey}
-                    className={`block ${isNow ? 'is-now' : ''}`}
+                    className={`block ${isNow ? 'is-now' : ''} ${short ? 'is-short' : ''}`}
                     style={{
                       top: `${offset(l.start)}px`,
                       height: `${(l.finish - l.start) * PX_PER_MINUTE - 3}px`,
@@ -107,7 +116,7 @@ export default function Schedule() {
                       {l.time}
                       {isNow && <span className="block__nowTag">{c.now}</span>}
                     </span>
-                    <LessonBody lesson={l} t={t} />
+                    <LessonBody lesson={l} t={t} compact={short} />
                   </article>
                 )
               })}
@@ -116,9 +125,11 @@ export default function Schedule() {
 
           {/* Nu-streep, met de stip op de kolom van vandaag */}
           {nowVisible && (
-            <span className="sched__now" style={{ top: `${offset(now)}px` }}>
+            <span className="sched__now" style={{ top: `${offset(now)}px`, '--day': todayIndex < 0 ? 0 : todayIndex }}>
               <span className="sched__nowTime data">{toClock(now)}</span>
-              <span className="sched__nowDot" style={{ '--day': todayIndex < 0 ? 0 : todayIndex }} aria-hidden="true" />
+              <span className="sched__nowLine" aria-hidden="true">
+                <span className="sched__nowDot" />
+              </span>
             </span>
           )}
         </div>

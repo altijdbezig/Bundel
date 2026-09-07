@@ -213,6 +213,12 @@ met de toetsen. Op smalle schermen vallen de bronnaam en de voettekst weg.
 | Kleur | Blokken wit met een grijs streepje links, alleen de huidige les groen. |
 | Mobiel | Onder 700px een agenda-lijst met een tijdbalk links, geen zijwaarts schuiven. |
 
+Na de eerste versie drie visuele fouten gemeld en gefixt: blokken van 50 minuten waren te laag
+waardoor de vaknaam over het lokaal heen liep (schaal van 1.1 naar 1.3 px per minuut, en korte
+lessen laten de docent weg), het uurlabel 10:00 botste met de nu-tijd 10:15 (uurlabels binnen
+20 minuten van nu vallen weg), en de nu-streep sneed door blokken van andere dagen (loopt nu
+alleen over de kolom van vandaag).
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -290,3 +296,6 @@ met de toetsen. Op smalle schermen vallen de bronnaam en de voettekst weg.
   Onder 700px een agenda-lijst in plaats van het raster. Rendertest controleert nu ook de
   roosterdata: eindtijden na begintijden, docent per les, rastergrenzen, gekoppelde deadlines
   en of de nu-streep in de juiste les valt.
+- **prompt 9**: drie visuele fouten in het rooster gefixt na een screenshot: te lage blokken,
+  botsende tijdlabels en een nu-streep die door andere dagen sneed. Dagkop compacter: datum en
+  de badge vandaag staan nu op een regel.
