@@ -149,6 +149,48 @@ export const IconPlay = (p) => (
   </Icon>
 )
 
+export const IconBell = (p) => (
+  <Icon {...p}>
+    <path d="M18 9.5a6 6 0 0 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5z" />
+    <path d="M10.3 19.5a2 2 0 0 0 3.4 0" />
+  </Icon>
+)
+
+export const IconSearch = (p) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M15.8 15.8l4 4" />
+  </Icon>
+)
+
+export const IconSettings = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3.2" />
+    <path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.2a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.8-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.5 13h-.2a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 6.2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-1.1v-.2a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.8 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.2a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.1z" />
+  </Icon>
+)
+
+export const IconPlug = (p) => (
+  <Icon {...p}>
+    <path d="M9 3.5v5M15 3.5v5" />
+    <path d="M6 8.5h12v3a6 6 0 0 1-12 0z" />
+    <path d="M12 17.5v3" />
+  </Icon>
+)
+
+export const IconClose = (p) => (
+  <Icon {...p}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </Icon>
+)
+
+export const IconInbox = (p) => (
+  <Icon {...p}>
+    <path d="M3.5 13.5h4l1.5 2.5h6l1.5-2.5h4" />
+    <path d="M5.5 4.5h13l2 9v5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5v-5z" />
+  </Icon>
+)
+
 export const IconMicrosoft = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }} aria-hidden="true" focusable="false">
     <rect x="2.5" y="2.5" width="8.5" height="8.5" fill="#F25022" />

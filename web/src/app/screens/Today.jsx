@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { fill, useI18n } from '../../i18n'
 import { useAppState } from '../state'
+import EmptyState from '../EmptyState'
+import { IconCalendar, IconTasks } from '../../components/Icons'
 import { getAssignments, getGroups, getRecentGrades, getToday } from '../data'
 
 export default function Today() {
@@ -27,6 +29,10 @@ export default function Today() {
       <div className="screen__cols">
         <section className="card stack stack-3">
           <span className="label">{c.scheduleLabel}</span>
+          {today.lessons.length === 0 && (
+            <EmptyState title={t.app.empty.lessons} hint={t.app.empty.lessonsHint} icon={IconCalendar} />
+          )}
+
           <div className="stack">
             {today.lessons.map((l) => (
               <div key={l.time} className={`lesson ${l.now ? 'is-now' : ''}`}>
@@ -48,7 +54,7 @@ export default function Today() {
           </div>
 
           {open.length === 0 ? (
-            <p className="meta">{c.allDone}</p>
+            <EmptyState title={t.app.empty.tasks} hint={t.app.empty.tasksHint} icon={IconTasks} />
           ) : (
             <div className="stack">
               {open.slice(0, 4).map((a) => (

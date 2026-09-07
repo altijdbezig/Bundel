@@ -70,7 +70,8 @@ Bundel/
       ├─ components/ Logo · Icons · Header · Footer · Reveal · AppPreview · WaitlistForm ·
       │              ContactCard
       ├─ auth.jsx    nep-sessie + RequireAuth
-      ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · screens/ (6 schermen)
+      ├─ app/        data.js (nepdata) · state.jsx · AppLayout.jsx · EmptyState.jsx ·
+      │              SearchDialog.jsx · NotificationsPanel.jsx · screens/ (8 schermen)
       └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
 ```
 
@@ -175,9 +176,20 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 | Hero | Inloggen is de enige grote knop, downloaden staat als tekstlink eronder. |
 | Taalkeuze in de app | Data komt tweetalig uit de datalaag, UI-labels staan onder `app` in `i18n.jsx`. |
 
+**Prompt 6: app afmaken (6 vragen gesteld, 6 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Onderdelen | Instellingen, meldingen, zoeken en lege staten, alle vier gebouwd. |
+| Geen bron gekoppeld | Onboarding-scherm neemt de app over. Instellingen blijft wel bereikbaar. |
+| Meldingen | Paneel dat openklapt onder het belletje in de topbalk, met stip bij ongelezen. |
+| Taalkeuze in de app | Onder Instellingen, niet in de zijbalk. |
+| Zoeken | Eén venster over de app heen, opent met Ctrl+K, zoekt door opdrachten, rooster, cijfers, groepen en berichten. |
+| Visuele controle | Jayde kijkt zelf. De Chrome-extensie blijft localhost blokkeren. |
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
-`/app/bronnen`, alle achter `RequireAuth`.
+`/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
 **Home-secties:** hero + app-preview, bronnenstrip, probleem, oplossing/functies (`#functies`),
 "wat Bundel niet doet", privacyblok, platforms, FAQ, wachtlijst (`#wachtlijst`).
 
@@ -234,3 +246,9 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
   demo, `RequireAuth` schermt `/app` af. Hero aangepast: inloggen is de enige grote knop,
   downloaden staat als tekstlink eronder. Header wijst naar `/app` zodra je bent ingelogd.
   Alle routes en schermen server-side gerenderd als test, alles rendert.
+- **prompt 6**: app afgemaakt. Topbalk met zoeken (Ctrl+K) en meldingenpaneel. Scherm
+  `/app/instellingen` met taal, meldingen aan of uit, account, demo opnieuw beginnen en
+  uitloggen. Onboarding-scherm zodra alle bronnen verbroken zijn. Lege staten via
+  `EmptyState.jsx` in Vandaag, Opdrachten, Rooster en Cijfers. Meldingen en zoekresultaten
+  komen ook uit `data.js`, dus ook die kant is klaar voor de echte API. Rendertest uitgebreid
+  met de nieuwe schermen en met controles op de zoekresultaten.

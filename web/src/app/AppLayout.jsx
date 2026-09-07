@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Mark } from '../components/Logo'
 import {
   IconToday,
@@ -7,11 +8,17 @@ import {
   IconGrades,
   IconGroups,
   IconSources,
+  IconSearch,
+  IconBell,
+  IconSettings,
 } from '../components/Icons'
 import { fill, useI18n } from '../i18n'
 import { useAuth } from '../auth'
 import { AppStateProvider, useAppState } from './state'
-import { getAssignments, getStudent, getStudentCourse, getSources, sourceName } from './data'
+import { getAssignments, getNotifications, getStudent, getStudentCourse, getSources, sourceName } from './data'
+import SearchDialog from './SearchDialog'
+import NotificationsPanel from './NotificationsPanel'
+import Onboarding from './screens/Onboarding'
 
 const NAV = [
   { to: '/app', end: true, key: 'today', Icon: IconToday },
@@ -21,6 +28,8 @@ const NAV = [
   { to: '/app/groepen', key: 'groups', Icon: IconGroups },
   { to: '/app/bronnen', key: 'sources', Icon: IconSources },
 ]
+
+const SETTINGS_PATH = '/app/instellingen'
 
 function UnreachableBanner() {
   const { t, lang } = useI18n()
@@ -46,12 +55,18 @@ function UnreachableBanner() {
 function Shell() {
   const { t, lang } = useI18n()
   const { signOut } = useAuth()
-  const { done, status } = useAppState()
+  const { done, status, noSources, readIds, notificationsOn } = useAppState()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   const student = getStudent()
   const openCount = getAssignments(lang).filter((a) => !done[a.id]).length
   const sources = getSources(lang)
+  const notifications = getNotifications(lang)
+  const unread = notificationsOn ? notifications.filter((n) => !readIds.includes(n.id)).length : 0
 
   const badges = {
     assignments: openCount ? String(openCount) : '',
@@ -59,10 +74,30 @@ function Shell() {
     sources: sources.some((s) => status(s.key) === 'warn') ? '!' : '',
   }
 
+  // Ctrl+K of Cmd+K opent het zoekvenster.
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setNotifOpen(false)
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  useEffect(() => {
+    setNotifOpen(false)
+  }, [location.pathname])
+
   function handleSignOut() {
     signOut()
     navigate('/')
   }
+
+  const onSettings = location.pathname === SETTINGS_PATH
+  const takeover = noSources && !onSettings
 
   return (
     <div className="appshell">
@@ -107,7 +142,13 @@ function Shell() {
                 <span className="appshell__sourceName">{s.name}</span>
                 <span
                   className={`appshell__sourceState data is-${state}`}
-                  title={state === 'ok' ? t.app.sources.connected : state === 'warn' ? t.app.sources.unreachable : t.app.sources.notConnected}
+                  title={
+                    state === 'ok'
+                      ? t.app.sources.connected
+                      : state === 'warn'
+                        ? t.app.sources.unreachable
+                        : t.app.sources.notConnected
+                  }
                 >
                   {state === 'ok' ? 'ok' : state === 'warn' ? '!' : 'off'}
                 </span>
@@ -117,6 +158,9 @@ function Shell() {
         </div>
 
         <div className="appshell__foot">
+          <NavLink to={SETTINGS_PATH} className="appshell__footLink">
+            {t.app.settings.title}
+          </NavLink>
           <Link to="/" className="appshell__footLink">
             {t.app.backToSite}
           </Link>
@@ -127,9 +171,38 @@ function Shell() {
       </aside>
 
       <div className="appshell__main">
+        <div className="topbar">
+          <button type="button" className="topbar__search" onClick={() => setSearchOpen(true)}>
+            <IconSearch size={18} />
+            <span className="topbar__searchLabel">{t.app.search.open}</span>
+            <span className="topbar__kbd data">Ctrl K</span>
+          </button>
+
+          <div className="topbar__actions">
+            <div className="topbar__bellWrap">
+              <button
+                type="button"
+                className="topbar__icon"
+                aria-label={t.app.notifications.open}
+                aria-expanded={notifOpen}
+                onClick={() => setNotifOpen((v) => !v)}
+              >
+                <IconBell size={19} />
+                {unread > 0 && <span className="topbar__unread" aria-hidden="true" />}
+              </button>
+              <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+            </div>
+
+            <NavLink to={SETTINGS_PATH} className="topbar__icon" aria-label={t.app.settings.title}>
+              <IconSettings size={19} />
+            </NavLink>
+          </div>
+        </div>
+
         <p className="appshell__demo meta">{t.app.demo}</p>
         <UnreachableBanner />
-        <Outlet />
+
+        {takeover ? <Onboarding /> : <Outlet />}
       </div>
 
       <nav className="appshell__tabbar" aria-label={t.nav.menu}>
@@ -145,6 +218,8 @@ function Shell() {
           </NavLink>
         ))}
       </nav>
+
+      <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }

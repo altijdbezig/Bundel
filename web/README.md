@@ -41,9 +41,13 @@ web/
    │  └─ ContactCard.jsx      contactblok met zichtbare placeholder
    ├─ app/                    de app-demo achter /app
    │  ├─ data.js             ALLE nepdata plus de getters (enige plek om te vervangen)
-   │  ├─ state.jsx           afgevinkte taken en bronstatus, alleen in het geheugen
-   │  ├─ AppLayout.jsx       zijbalk, mobiele onderbalk, storingsbalk
-   │  └─ screens/            Today · Assignments · Schedule · Grades · Groups · Sources
+   │  ├─ state.jsx           taken, bronstatus, gelezen meldingen, voorkeuren
+   │  ├─ AppLayout.jsx       zijbalk, topbalk, mobiele onderbalk, storingsbalk
+   │  ├─ SearchDialog.jsx    zoekvenster, opent met Ctrl+K
+   │  ├─ NotificationsPanel.jsx  paneel onder het belletje
+   │  ├─ EmptyState.jsx      lege staat binnen een kaart
+   │  └─ screens/            Today · Assignments · Schedule · Grades · Groups · Sources ·
+   │                         Settings · Onboarding
    ├─ auth.jsx               nep-sessie plus RequireAuth
    └─ pages/
       ├─ Home.jsx             /
@@ -104,6 +108,18 @@ functies en houd je de vorm van wat ze teruggeven gelijk. Dan hoeft geen enkel s
 
 Op `/app/bronnen` kun je bronnen koppelen, verbreken en een storing simuleren. Dat laatste
 zet de gele balk bovenaan aan, zodat je ziet hoe de app zich houdt als Canvas plat gaat.
+Verbreek je alle vier de bronnen, dan neemt het onboarding-scherm de app over.
+
+Zoeken opent met Ctrl+K of met de knop in de topbalk en zoekt door opdrachten, rooster,
+cijfers, groepen en berichten. Meldingen zitten achter het belletje ernaast. Beide halen hun
+inhoud uit `data.js`, dus ook die zijn klaar voor de echte API.
+
+## Testen zonder browser
+
+De Chrome-extensie blokkeert localhost, dus visueel controleren gaat via je eigen browser.
+Om te controleren dat er niets crasht kun je alle routes en schermen server-side renderen:
+schrijf een tijdelijke `src/__smoke.jsx` die `renderToString` aanroept, bouw met
+`npx vite build --ssr src/__smoke.jsx --outDir .smoke` en draai `node .smoke/__smoke.js`.
 
 ## Teksten wijzigen
 

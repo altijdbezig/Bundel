@@ -16,6 +16,7 @@ import Schedule from './app/screens/Schedule'
 import Grades from './app/screens/Grades'
 import Groups from './app/screens/Groups'
 import Sources from './app/screens/Sources'
+import Settings from './app/screens/Settings'
 import { RequireAuth } from './auth'
 import { useI18n } from './i18n'
 
@@ -33,6 +34,7 @@ const TITLES = {
     '/app/cijfers': 'Cijfers · Bundel',
     '/app/groepen': 'Groepen · Bundel',
     '/app/bronnen': 'Bronnen · Bundel',
+    '/app/instellingen': 'Instellingen · Bundel',
   },
   en: {
     '/': 'Bundel · timetable, assignments and grades side by side',
@@ -47,6 +49,7 @@ const TITLES = {
     '/app/cijfers': 'Grades · Bundel',
     '/app/groepen': 'Groups · Bundel',
     '/app/bronnen': 'Sources · Bundel',
+    '/app/instellingen': 'Settings · Bundel',
   },
 }
 
@@ -127,6 +130,7 @@ export default function App() {
           <Route path="cijfers" element={<Grades />} />
           <Route path="groepen" element={<Groups />} />
           <Route path="bronnen" element={<Sources />} />
+          <Route path="instellingen" element={<Settings />} />
         </Route>
       </Routes>
     </>

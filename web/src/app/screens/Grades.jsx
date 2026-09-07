@@ -1,5 +1,7 @@
 import { fill, useI18n } from '../../i18n'
 import { getAverage, getGrades, sourceColor, sourceName } from '../data'
+import EmptyState from '../EmptyState'
+import { IconGrades } from '../../components/Icons'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
 
@@ -26,6 +28,16 @@ export default function Grades() {
       </header>
 
       <section className="card stack">
+        {grades.length === 0 && (
+          <EmptyState
+            title={t.app.empty.grades}
+            hint={t.app.empty.gradesHint}
+            to="/app/bronnen"
+            linkLabel={t.app.empty.sourceLink}
+            icon={IconGrades}
+          />
+        )}
+
         {grades.map((g) => (
           <div key={g.subject} className="grade">
             <span className="grade__text">

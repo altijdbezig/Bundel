@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { fill, useI18n } from '../../i18n'
 import { useAppState } from '../state'
 import { getAssignments, getSources } from '../data'
+import EmptyState from '../EmptyState'
 
 export default function Assignments() {
   const { t, lang } = useI18n()
@@ -42,7 +43,9 @@ export default function Assignments() {
       </div>
 
       <section className="card stack">
-        {shown.length === 0 && <p className="meta">{c.empty}</p>}
+        {shown.length === 0 && (
+          <EmptyState title={c.empty} to="/app/bronnen" linkLabel={t.app.empty.sourceLink} />
+        )}
 
         {shown.map((a) => {
           const isDone = !!done[a.id]

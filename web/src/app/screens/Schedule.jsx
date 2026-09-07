@@ -26,7 +26,7 @@ export default function Schedule() {
             {d.today && <span className="badge badge--ok week__badge">{c.today}</span>}
 
             <div className="stack stack-2">
-              {d.lessons.length === 0 && <span className="meta">{c.empty}</span>}
+              {d.lessons.length === 0 && <span className="meta week__empty">{c.empty}</span>}
               {d.lessons.map((l) => (
                 <div key={l.time + l.subject} className="week__lesson">
                   <span className="data week__time">{l.time}</span>

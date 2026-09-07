@@ -279,6 +279,56 @@ const GROUPS = [
   },
 ]
 
+// ---------------------------------------------------------------- meldingen
+
+const NOTIFICATIONS = [
+  {
+    id: 'n1',
+    kind: 'deadline',
+    source: 'canvas',
+    time: '12:04',
+    title: t('Moodboard moet vandaag om 17:00 in', 'Moodboard is due today at 17:00'),
+    body: t('Interaction Design', 'Interaction Design'),
+    to: '/app/opdrachten',
+  },
+  {
+    id: 'n2',
+    kind: 'grade',
+    source: 'magister',
+    time: '09:41',
+    title: t('Nieuw cijfer: 8.0 voor Prototype v1', 'New grade: 8.0 for Prototype v1'),
+    body: t('Interaction Design', 'Interaction Design'),
+    to: '/app/cijfers',
+  },
+  {
+    id: 'n3',
+    kind: 'message',
+    source: 'own',
+    time: '10:02',
+    title: t('Jayden schreef in Groep 4', 'Jayden posted in Group 4'),
+    body: t('Denk aan de foutstatus per bron.', 'Remember the per-source error state.'),
+    to: '/app/groepen',
+  },
+  {
+    id: 'n4',
+    kind: 'grade',
+    source: 'magister',
+    time: 'gisteren',
+    title: t('Nieuw cijfer: 7.0 voor Deeltoets', 'New grade: 7.0 for the partial test'),
+    body: t('Mediatheorie', 'Media Theory'),
+    to: '/app/cijfers',
+  },
+  {
+    id: 'n5',
+    kind: 'schedule',
+    source: 'magister',
+    time: 'gisteren',
+    title: t('Lokaalwijziging donderdag', 'Room change on Thursday'),
+    body: t('Projecturen nu in Studio 3', 'Project hours now in Studio 3'),
+    to: '/app/rooster',
+  },
+]
+
 // ================================================================
 // Publieke functies. Alleen deze worden door de schermen gebruikt.
 // ================================================================
@@ -366,6 +416,102 @@ export function getSources(lang) {
     sync: pick(SOURCES[key].sync, lang),
     lastSync: SOURCES[key].lastSync,
   }))
+}
+
+export function getNotifications(lang) {
+  return NOTIFICATIONS.map((n) => ({
+    ...n,
+    title: pick(n.title, lang),
+    body: pick(n.body, lang),
+    sourceName: pick(SOURCES[n.source].name, lang),
+    sourceColor: SOURCES[n.source].color,
+  }))
+}
+
+/**
+ * Zoekt door opdrachten, lessen, groepen en berichten.
+ * Geeft platte resultaten terug met het type erbij, zodat het scherm
+ * niet hoeft te weten waar iets vandaan komt.
+ */
+export function search(query, lang) {
+  const q = query.trim().toLowerCase()
+  if (q.length < 2) return []
+
+  const hit = (text) => String(text).toLowerCase().includes(q)
+  const results = []
+
+  getAssignments(lang).forEach((a) => {
+    if (hit(a.title) || hit(a.subject)) {
+      results.push({
+        id: `a-${a.id}`,
+        type: 'assignment',
+        title: a.title,
+        meta: `${a.subject} · ${a.due}`,
+        color: a.sourceColor,
+        sourceName: a.sourceName,
+        to: '/app/opdrachten',
+      })
+    }
+  })
+
+  getWeek(lang).forEach((d) => {
+    d.lessons.forEach((l) => {
+      if (hit(l.subject) || hit(l.room)) {
+        results.push({
+          id: `l-${d.date}-${l.time}-${l.subject}`,
+          type: 'lesson',
+          title: l.subject,
+          meta: `${d.day} ${l.time} · ${l.room}`,
+          color: SOURCES.magister.color,
+          sourceName: pick(SOURCES.magister.name, lang),
+          to: '/app/rooster',
+        })
+      }
+    })
+  })
+
+  getGrades(lang).forEach((g) => {
+    if (hit(g.subject)) {
+      results.push({
+        id: `g-${g.subject}`,
+        type: 'grade',
+        title: g.subject,
+        meta: `${g.average.toFixed(1)} ${lang === 'en' ? 'average' : 'gemiddeld'}`,
+        color: SOURCES.magister.color,
+        sourceName: pick(SOURCES.magister.name, lang),
+        to: '/app/cijfers',
+      })
+    }
+  })
+
+  getGroups(lang).forEach((group) => {
+    if (hit(group.name) || hit(group.subject)) {
+      results.push({
+        id: `gr-${group.id}`,
+        type: 'group',
+        title: group.name,
+        meta: group.subject,
+        color: SOURCES.own.color,
+        sourceName: pick(SOURCES.own.name, lang),
+        to: '/app/groepen',
+      })
+    }
+    group.messages.forEach((m) => {
+      if (hit(m.text)) {
+        results.push({
+          id: `m-${group.id}-${m.id}`,
+          type: 'message',
+          title: m.text,
+          meta: `${m.from} · ${group.name}`,
+          color: SOURCES.own.color,
+          sourceName: pick(SOURCES.own.name, lang),
+          to: '/app/groepen',
+        })
+      }
+    })
+  })
+
+  return results
 }
 
 /** Kleur van een bron, voor stippen en randjes. Nooit als vlak gebruiken. */

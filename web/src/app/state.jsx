@@ -2,9 +2,9 @@ import { createContext, useContext, useMemo, useState } from 'react'
 import { SOURCE_KEYS } from './data'
 
 /**
- * Losse schermtoestand van de demo: welke taken afgevinkt zijn en welke
- * bronnen gekoppeld of onbereikbaar zijn. Leeft alleen zolang de app open
- * staat. Later vervangt de back-end dit.
+ * Losse schermtoestand van de demo: afgevinkte taken, bronstatus, gelezen
+ * meldingen en voorkeuren. Leeft alleen zolang de app open staat.
+ * Later vervangt de back-end dit.
  */
 
 const AppStateContext = createContext(null)
@@ -19,6 +19,8 @@ export function AppStateProvider({ children }) {
   const [done, setDone] = useState({})
   const [sources, setSources] = useState(initialSources)
   const [sentMessages, setSentMessages] = useState({})
+  const [readIds, setReadIds] = useState([])
+  const [notificationsOn, setNotificationsOn] = useState(true)
 
   const value = useMemo(() => {
     const toggleDone = (id) => setDone((d) => ({ ...d, [id]: !d[id] }))
@@ -29,10 +31,15 @@ export function AppStateProvider({ children }) {
     const toggleReachable = (key) =>
       setSources((s) => ({ ...s, [key]: { ...s[key], reachable: !s[key].reachable } }))
 
+    const connectAll = () => setSources(initialSources())
+
     const sendMessage = (groupId, text) =>
       setSentMessages((m) => ({
         ...m,
-        [groupId]: [...(m[groupId] ?? []), { id: `own-${Date.now()}`, from: 'Luca', initials: 'LV', time: 'nu', self: true, text }],
+        [groupId]: [
+          ...(m[groupId] ?? []),
+          { id: `own-${Date.now()}`, from: 'Luca', initials: 'LV', time: 'nu', self: true, text },
+        ],
       }))
 
     const status = (key) => {
@@ -45,8 +52,43 @@ export function AppStateProvider({ children }) {
     /** Bronnen die gekoppeld zijn maar niet reageren. Voedt de balk bovenaan. */
     const unreachable = SOURCE_KEYS.filter((key) => sources[key].connected && !sources[key].reachable)
 
-    return { done, toggleDone, sources, toggleConnected, toggleReachable, status, unreachable, sentMessages, sendMessage }
-  }, [done, sources, sentMessages])
+    /** Geen enkele bron gekoppeld: dan neemt het onboarding-scherm het over. */
+    const noSources = SOURCE_KEYS.every((key) => !sources[key].connected)
+
+    const isRead = (id) => readIds.includes(id)
+    const markRead = (id) => setReadIds((r) => (r.includes(id) ? r : [...r, id]))
+    const markAllRead = (ids) => setReadIds(ids)
+
+    /** Wist alles wat de demo onthoudt. Zit onder Instellingen. */
+    const resetAll = () => {
+      setDone({})
+      setSources(initialSources())
+      setSentMessages({})
+      setReadIds([])
+      setNotificationsOn(true)
+    }
+
+    return {
+      done,
+      toggleDone,
+      sources,
+      toggleConnected,
+      toggleReachable,
+      connectAll,
+      status,
+      unreachable,
+      noSources,
+      sentMessages,
+      sendMessage,
+      readIds,
+      isRead,
+      markRead,
+      markAllRead,
+      notificationsOn,
+      setNotificationsOn,
+      resetAll,
+    }
+  }, [done, sources, sentMessages, readIds, notificationsOn])
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>
 }
