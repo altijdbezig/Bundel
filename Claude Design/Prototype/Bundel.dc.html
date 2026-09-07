@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F7F6F2; color: #17181A; font-family: "Instrument Sans", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; text-wrap: pretty; }
+  a { color: #0E7C66; text-decoration: none; }
+  a:hover { color: #0A5C4B; text-decoration: underline; }
+  button { font-family: inherit; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+</helmet>
+
+<div style="padding: 28px 24px 72px; display: flex; flex-direction: column; align-items: center; gap: 22px;">
+
+  <div style="width: 100%; max-width: 1140px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 22px; height: 22px; border-radius: 7px; background: #0E7C66;"></div>
+      <span style="font-size: 16px; font-weight: 600; letter-spacing: -0.01em;">{{ appName }}</span>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #63676E; padding-left: 8px; border-left: 1px solid #E0DDD5;">prototype · nepdata</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button type="button" onClick="{{ onToggleDown }}" style="{{ downBtnStyle }}" style-hover="border-color: #17181A;">Bron plat</button>
+      <div style="display: flex; padding: 3px; gap: 3px; background: #EDEBE5; border-radius: 9px;">
+        <button type="button" onClick="{{ onDesktop }}" style="{{ desktopBtnStyle }}">Desktop</button>
+        <button type="button" onClick="{{ onMobile }}" style="{{ mobileBtnStyle }}">Mobiel</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="{{ shellStyle }}">
+
+    <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+      <aside style="border-right: 1px solid #E6E3DC; padding: 18px 14px; display: flex; flex-direction: column; gap: 20px; background: #FCFBF8;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 2px 8px;">
+          <div style="width: 32px; height: 32px; border-radius: 9px; background: #E6F2EE; color: #0E7C66; display: grid; place-items: center; font-size: 13px; font-weight: 600;">{{ initials }}</div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ studentName }}</div>
+            <div style="font-size: 11px; color: #63676E;">Mediavormgeving · lj 3</div>
+          </div>
+        </div>
+        <nav style="display: flex; flex-direction: column; gap: 2px;">
+          <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="6">
+            <button type="button" onClick="{{ tab.onClick }}" style="{{ tab.style }}" style-hover="background: #F0EEE8;">
+              <span>{{ tab.label }}</span>
+              <span style="{{ tab.badgeStyle }}">{{ tab.badge }}</span>
+            </button>
+          </sc-for>
+        </nav>
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 9px; padding: 12px; border: 1px solid #E6E3DC; border-radius: 11px; background: #FFFFFF;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E;">Bronnen</div>
+          <sc-for list="{{ connections }}" as="c" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+              <span style="{{ c.dotStyle }}"></span>
+              <span style="flex: 1; color: #43474D;">{{ c.naam }}</span>
+              <span style="{{ c.stateStyle }}">{{ c.stateKort }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </aside>
+    </sc-if>
+
+    <main style="{{ mainStyle }}">
+
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 2px 14px;">
+          <div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E;">Ma 7 sep</div>
+            <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; margin-top: 2px;">{{ activeLabel }}</div>
+          </div>
+          <div style="width: 30px; height: 30px; border-radius: 9px; background: #E6F2EE; color: #0E7C66; display: grid; place-items: center; font-size: 12px; font-weight: 600;">{{ initials }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ sourceDown }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 1px solid #EFDCC2; background: #FDF7EE; border-radius: 11px; margin-bottom: 20px; flex-wrap: wrap;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #B4690E; animation: pulse 1.8s ease-in-out infinite;"></span>
+          <span style="font-size: 13px; color: #7A4A0B; flex: 1; min-width: 180px;">Canvas niet bereikbaar. Je ziet de laatste sync van 12:04 — nieuwe wijzigingen komen zodra de bron terug is.</span>
+          <button type="button" onClick="{{ onToggleDown }}" style="height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid #E7D2AF; background: #FFFFFF; font-size: 12px; color: #7A4A0B; cursor: pointer;" style-hover="border-color: #B4690E;">Opnieuw</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVandaag }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px;">
+              <h2 style="margin: 0; font-size: 27px; letter-spacing: -0.025em; font-weight: 600;">Maandag 7 september</h2>
+              <span style="font-size: 13px; color: #6B6F76;">{{ samenvatting }}</span>
+            </div>
+          </sc-if>
+
+          <div style="{{ twoColStyle }}">
+            <div style="border: 1px solid #E6E3DC; border-radius: 13px; padding: 17px; background: #FFFFFF;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E; margin-bottom: 13px;">Rooster vandaag</div>
+              <div style="display: flex; flex-direction: column; gap: 3px;">
+                <sc-for list="{{ rooster }}" as="r" hint-placeholder-count="4">
+                  <div style="{{ r.rowStyle }}">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6B6F76; width: 84px; flex: none;">{{ r.tijd }}</span>
+                    <span style="flex: 1; font-size: 14px; font-weight: 500; min-width: 0;">{{ r.vak }}</span>
+                    <span style="font-size: 12px; color: #63676E;">{{ r.lokaal }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid #E6E3DC; border-radius: 13px; padding: 17px; background: #FFFFFF;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E;">Deze week af</div>
+                <button type="button" onClick="{{ onGoTaken }}" style="border: none; background: none; padding: 0; font-size: 12px; color: #0E7C66; cursor: pointer;" style-hover="text-decoration: underline;">alles</button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <sc-for list="{{ weekTaken }}" as="t" hint-placeholder-count="4">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 8px 6px; border-radius: 9px;" style-hover="background: #FAF9F5;">
+                    <button type="button" onClick="{{ t.onToggle }}" style="{{ t.boxStyle }}">{{ t.mark }}</button>
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="{{ t.titelStyle }}">{{ t.titel }}</div>
+                      <div style="font-size: 11.5px; color: #63676E; display: flex; gap: 7px; align-items: center; margin-top: 2px;">
+                        <span style="{{ t.dotStyle }}"></span>
+                        <span>{{ t.vak }}</span>
+                      </div>
+                    </div>
+                    <span style="{{ t.deadlineStyle }}">{{ t.deadline }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="{{ twoColStyle }}">
+            <div style="border: 1px solid #E6E3DC; border-radius: 13px; padding: 17px; background: #FFFFFF;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E; margin-bottom: 13px;">Laatste cijfers</div>
+              <div style="display: flex; flex-direction: column; gap: 3px;">
+                <sc-for list="{{ laatsteCijfers }}" as="g" hint-placeholder-count="3">
+                  <div style="display: flex; align-items: baseline; gap: 12px; padding: 7px 4px; border-bottom: 1px solid #F1EFE9;">
+                    <span style="flex: 1; font-size: 14px; min-width: 0;">{{ g.vak }}</span>
+                    <span style="font-size: 11.5px; color: #63676E;">{{ g.wat }}</span>
+                    <span style="{{ g.cijferStyle }}">{{ g.cijfer }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid #E6E3DC; border-radius: 13px; padding: 17px; background: #FFFFFF; display: flex; flex-direction: column;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: #63676E; margin-bottom: 13px;">Groep 4 · App SintLucas</div>
+              <div style="display: flex; flex-direction: column; gap: 10px; flex: 1;">
+                <sc-for list="{{ chatPreview }}" as="m" hint-placeholder-count="2">
+                  <div style="display: flex; gap: 9px;">
+                    <div style="{{ m.avatarStyle }}">{{ m.initialen }}</div>
+                    <div style="min-width: 0;">
+                      <div style="font-size: 11.5px; color: #63676E;">{{ m.van }} · {{ m.tijd }}</div>
+                      <div style="font-size: 13.5px; line-height: 1.45; color: #2B2D31;">{{ m.tekst }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <button type="button" onClick="{{ onGoGroepen }}" style="margin-top: 14px; height: 36px; border-radius: 9px; border: 1px solid #E0DDD5; background: #FCFBF8; font-size: 13px; cursor: pointer; color: #17181A;" style-hover="border-color: #17181A;">Open groepschat</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTaken }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <h2 style="margin: 0 0 18px; font-size: 27px; letter-spacing: -0.025em; font-weight: 600;">Opdrachten</h2>
+          </sc-if>
+          <div style="display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px;">
+            <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+              <button type="button" onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="border-color: #17181A;">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="border: 1px solid #E6E3DC; border-radius: 13px; background: #FFFFFF; overflow: hidden;">
+            <sc-for list="{{ zichtbareTaken }}" as="t" hint-placeholder-count="6">
+              <div style="display: flex; align-items: center; gap: 13px; padding: 14px 16px; border-bottom: 1px solid #F1EFE9;" style-hover="background: #FAF9F5;">
+                <button type="button" onClick="{{ t.onToggle }}" style="{{ t.boxStyle }}">{{ t.mark }}</button>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="{{ t.titelStyle }}">{{ t.titel }}</div>
+                  <div style="font-size: 11.5px; color: #63676E; display: flex; gap: 7px; align-items: center; margin-top: 3px;">
+                    <span style="{{ t.dotStyle }}"></span>
+                    <span>{{ t.vak }}</span>
+                    <span style="color: #C9C6BE;">·</span>
+                    <span style="font-family: 'JetBrains Mono', monospace;">{{ t.bron }}</span>
+                  </div>
+                </div>
+                <span style="{{ t.deadlineStyle }}">{{ t.deadline }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size: 12px; color: #63676E; margin-top: 12px;">{{ takenVoet }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRooster }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <h2 style="margin: 0 0 18px; font-size: 27px; letter-spacing: -0.025em; font-weight: 600;">Rooster · week 37</h2>
+          </sc-if>
+          <div style="{{ weekGridStyle }}">
+            <sc-for list="{{ week }}" as="d" hint-placeholder-count="5">
+              <div style="{{ d.colStyle }}">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 11px;">
+                  <span style="font-size: 13px; font-weight: 600;">{{ d.dag }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #63676E;">{{ d.datum }}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <sc-for list="{{ d.lessen }}" as="l" hint-placeholder-count="3">
+                    <div style="{{ l.style }}">
+                      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B6F76;">{{ l.tijd }}</div>
+                      <div style="font-size: 13px; font-weight: 500; margin-top: 2px;">{{ l.vak }}</div>
+                      <div style="font-size: 11.5px; color: #63676E; margin-top: 1px;">{{ l.lokaal }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCijfers }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 18px;">
+              <h2 style="margin: 0; font-size: 27px; letter-spacing: -0.025em; font-weight: 600;">Cijfers</h2>
+              <span style="font-size: 13px; color: #6B6F76;">Gemiddeld <strong style="color: #17181A; font-weight: 600;">{{ gemiddelde }}</strong> · alleen-lezen uit Magister</span>
+            </div>
+          </sc-if>
+          <div style="border: 1px solid #E6E3DC; border-radius: 13px; background: #FFFFFF; overflow: hidden;">
+            <sc-for list="{{ cijfers }}" as="c" hint-placeholder-count="5">
+              <div style="padding: 15px 17px; border-bottom: 1px solid #F1EFE9; display: flex; align-items: center; gap: 16px;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 14.5px; font-weight: 500;">{{ c.vak }}</div>
+                  <div style="font-size: 11.5px; color: #63676E; margin-top: 3px;">{{ c.detail }}</div>
+                </div>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                  <sc-for list="{{ c.punten }}" as="p" hint-placeholder-count="3">
+                    <span style="{{ p.style }}">{{ p.waarde }}</span>
+                  </sc-for>
+                </div>
+                <div style="{{ c.gemStyle }}">{{ c.gemiddelde }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGroepen }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <h2 style="margin: 0 0 18px; font-size: 27px; letter-spacing: -0.025em; font-weight: 600;">Groepen</h2>
+          </sc-if>
+          <div style="{{ groepGridStyle }}">
+            <div style="display: flex; flex-direction: column; gap: 7px;">
+              <sc-for list="{{ groepen }}" as="g" hint-placeholder-count="2">
+                <button type="button" onClick="{{ g.onClick }}" style="{{ g.style }}">
+                  <div style="font-size: 13.5px; font-weight: 600;">{{ g.naam }}</div>
+                  <div style="font-size: 11.5px; color: #63676E; margin-top: 3px;">{{ g.meta }}</div>
+                </button>
+              </sc-for>
+              <div style="margin-top: 4px; padding: 12px; border: 1px dashed #DAD6CD; border-radius: 11px; font-size: 11.5px; color: #6B6F76; line-height: 1.5;">Groepen zijn eigen data. Ze hangen optioneel aan een vak, zodat de chat automatisch bij het juiste vak staat.</div>
+            </div>
+
+            <div style="border: 1px solid #E6E3DC; border-radius: 13px; background: #FFFFFF; display: flex; flex-direction: column; overflow: hidden;">
+              <div style="padding: 13px 16px; border-bottom: 1px solid #F1EFE9; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div>
+                  <div style="font-size: 14px; font-weight: 600;">{{ activeGroep.naam }}</div>
+                  <div style="font-size: 11.5px; color: #63676E; margin-top: 2px;">{{ activeGroep.meta }}</div>
+                </div>
+                <sc-if value="{{ showEncryptionBadge }}" hint-placeholder-val="{{ true }}">
+                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: #E6F2EE; color: #0A5C4B; font-size: 11px; font-weight: 500;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #0E7C66;"></span>
+                    end-to-end versleuteld
+                  </span>
+                </sc-if>
+              </div>
+              <div style="{{ chatScrollStyle }}">
+                <sc-for list="{{ berichten }}" as="m" hint-placeholder-count="4">
+                  <div style="{{ m.rowStyle }}">
+                    <sc-if value="{{ m.toonAvatar }}" hint-placeholder-val="{{ true }}">
+                      <div style="{{ m.avatarStyle }}">{{ m.initialen }}</div>
+                    </sc-if>
+                    <div style="{{ m.bubbleWrapStyle }}">
+                      <div style="{{ m.metaStyle }}">{{ m.van }} · {{ m.tijd }}</div>
+                      <div style="{{ m.bubbleStyle }}">{{ m.tekst }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding: 12px 14px; border-top: 1px solid #F1EFE9; display: flex; gap: 9px;">
+                <input value="{{ concept }}" onChange="{{ onConceptChange }}" onKeyDown="{{ onConceptKey }}" placeholder="Bericht aan de groep" style="flex: 1; min-width: 0; height: 38px; padding: 0 13px; border-radius: 9px; border: 1px solid #E0DDD5; background: #FCFBF8; font-family: inherit; font-size: 13.5px; color: #17181A; outline: none;" style-focus="border-color: #0E7C66;" />
+                <button type="button" onClick="{{ onSend }}" style="height: 38px; padding: 0 16px; border-radius: 9px; border: none; background: #0E7C66; color: #FFFFFF; font-size: 13.5px; font-weight: 500; cursor: pointer;" style-hover="background: #0A5C4B;">Stuur</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBronnen }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 6px;">
+              <h2 style="margin: 0; font-size: 27px; letter-spacing: -0.025em; font-weight: 600;">Bronnen</h2>
+              <span style="font-size: 13px; color: #6B6F76;">Wij lezen alleen. Er wordt nooit iets terugschreven.</span>
+            </div>
+          </sc-if>
+          <p style="font-size: 13.5px; line-height: 1.6; color: #43474D; max-width: 46em; margin: 8px 0 20px;">Per bron bewaren we een versleutelde access- en refresh-token, nooit je wachtwoord. Je kunt een koppeling op elk moment verbreken; dan verdwijnt ook de gespiegelde data.</p>
+          <div style="{{ bronGridStyle }}">
+            <sc-for list="{{ connections }}" as="c" hint-placeholder-count="4">
+              <div style="border: 1px solid #E6E3DC; border-radius: 13px; background: #FFFFFF; padding: 17px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="{{ c.dotStyle }}"></span>
+                  <span style="font-size: 15px; font-weight: 600;">{{ c.naam }}</span>
+                  <span style="{{ c.stateStyle }}">{{ c.state }}</span>
+                </div>
+                <div style="font-size: 12.5px; line-height: 1.55; color: #6B6F76;">{{ c.uitleg }}</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto;">
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #63676E;">{{ c.sync }}</span>
+                  <button type="button" onClick="{{ c.onToggle }}" style="{{ c.btnStyle }}">{{ c.btnLabel }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <nav style="border-top: 1px solid #E6E3DC; background: #FCFBF8; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 6px 4px 10px;">
+        <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="6">
+          <button type="button" onClick="{{ tab.onClick }}" style="{{ tab.mobileStyle }}">
+            <span style="{{ tab.mobileDotStyle }}"></span>
+            <span>{{ tab.kort }}</span>
+          </button>
+        </sc-for>
+      </nav>
+    </sc-if>
+
+  </div>
+
+  <div style="width: 100%; max-width: 1140px; font-size: 12px; color: #63676E; line-height: 1.6;">Prototype van de studenten-app. Alle namen, cijfers en berichten zijn verzonnen; de bronkoppelingen zijn gesimuleerd.</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1220,&quot;height&quot;:900},&quot;appName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Bundel&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;studentName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Luca Verhoeven&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showEncryptionBadge&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const ACCENT = "#0E7C66";
+const BRON_KLEUR = { Canvas: "#E4572E", Teams: "#5B4BE8", Magister: "#2F5BEA", Somtoday: "#B4690E", Eigen: ACCENT };
+
+class Component extends DCLogic {
+  state = {
+    tab: "vandaag",
+    view: "desktop",
+    filter: "Alle",
+    down: false,
+    groep: "g1",
+    concept: "",
+    klaar: { t6: true },
+    verbonden: { Canvas: true, Teams: true, Magister: false, Eigen: true },
+    berichten: [
+      { id: 1, van: "Jayden", initialen: "JB", tijd: "09:12", tekst: "Tokenrefresh werkt. Canvas-assignments komen nu binnen als Task.", eigen: false },
+      { id: 2, van: "Noor", initialen: "NK", tijd: "09:20", tekst: "Top. Ik zet de deadlines in het moodboard zodat we ze kunnen tonen.", eigen: false },
+      { id: 3, van: "Luca", initialen: "LV", tijd: "09:31", tekst: "Ik pak vandaag het Vandaag-scherm. Rooster en taken naast elkaar.", eigen: true },
+      { id: 4, van: "Jayden", initialen: "JB", tijd: "10:02", tekst: "Denk aan de foutstatus per bron — niet de hele pagina leeg als Canvas plat gaat.", eigen: false }
+    ]
+  };
+
+  taken() {
+    return [
+      { id: "t1", titel: "Moodboard interactief concept inleveren", vak: "Interaction Design", bron: "Canvas", deadline: "vandaag 17:00", urgent: true },
+      { id: "t2", titel: "Assets exporteren voor Jayden", vak: "Projecturen", bron: "Eigen", deadline: "di 8 sep", urgent: true },
+      { id: "t3", titel: "Onderzoeksverslag doelgroep", vak: "Mediatheorie", bron: "Canvas", deadline: "wo 10 sep", urgent: false },
+      { id: "t4", titel: "Storyboard uploaden in kanaal", vak: "Concepting", bron: "Teams", deadline: "do 11 sep", urgent: false },
+      { id: "t5", titel: "Toets kleurtheorie voorbereiden", vak: "Vormgeving", bron: "Magister", deadline: "vr 12 sep", urgent: false },
+      { id: "t6", titel: "Planning inleveren", vak: "Loopbaan", bron: "Canvas", deadline: "vr 4 sep", urgent: false }
+    ];
+  }
+
+  navBtn(active) {
+    return { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", width: "100%", height: "36px", padding: "0 10px", border: "none", borderRadius: "9px", background: active ? "#E6F2EE" : "transparent", color: active ? "#0A5C4B" : "#43474D", fontSize: "13.5px", fontWeight: active ? 600 : 500, cursor: "pointer", textAlign: "left" };
+  }
+
+  bronDot(kleur) {
+    return { width: "8px", height: "8px", borderRadius: "50%", background: kleur, flex: "none" };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const mobile = s.view === "mobiel";
+    const set = (k, v) => () => this.setState({ [k]: v });
+
+    const tabDefs = [
+      { id: "vandaag", label: "Vandaag", kort: "Nu" },
+      { id: "taken", label: "Opdrachten", kort: "Taken" },
+      { id: "rooster", label: "Rooster", kort: "Rooster" },
+      { id: "cijfers", label: "Cijfers", kort: "Cijfers" },
+      { id: "groepen", label: "Groepen", kort: "Groep" },
+      { id: "bronnen", label: "Bronnen", kort: "Bron" }
+    ];
+
+    const alle = this.taken().map(t => ({ ...t, done: !!s.klaar[t.id] }));
+    const open = alle.filter(t => !t.done);
+    const openCount = open.length;
+
+    const badges = { taken: openCount ? String(openCount) : "", groepen: "2", bronnen: s.down ? "!" : "" };
+
+    const tabs = tabDefs.map(t => {
+      const active = s.tab === t.id;
+      return {
+        label: t.label,
+        kort: t.kort,
+        badge: badges[t.id] || "",
+        onClick: set("tab", t.id),
+        style: this.navBtn(active),
+        badgeStyle: { fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: badges[t.id] === "!" ? "#B4690E" : "#63676E" },
+        mobileStyle: { display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", padding: "6px 2px", border: "none", background: "none", fontSize: "10px", fontWeight: active ? 600 : 500, color: active ? "#0A5C4B" : "#63676E", cursor: "pointer", minHeight: "44px", justifyContent: "center" },
+        mobileDotStyle: { width: "5px", height: "5px", borderRadius: "50%", background: active ? ACCENT : "transparent" }
+      };
+    });
+
+    const taakRij = t => ({
+      titel: t.titel,
+      vak: t.vak,
+      bron: t.bron,
+      deadline: t.done ? "afgerond" : t.deadline,
+      mark: t.done ? "✓" : "",
+      onToggle: () => this.setState(p => ({ klaar: { ...p.klaar, [t.id]: !p.klaar[t.id] } })),
+      boxStyle: { width: "20px", height: "20px", flex: "none", borderRadius: "6px", border: t.done ? "1px solid " + ACCENT : "1px solid #D5D1C8", background: t.done ? ACCENT : "#FFFFFF", color: "#FFFFFF", fontSize: "12px", lineHeight: 1, cursor: "pointer", display: "grid", placeItems: "center", padding: 0 },
+      titelStyle: { fontSize: "14px", fontWeight: 500, color: t.done ? "#A2A6AC" : "#17181A", textDecoration: t.done ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+      dotStyle: this.bronDot(BRON_KLEUR[t.bron] || "#63676E"),
+      deadlineStyle: { fontSize: "12px", flex: "none", fontWeight: t.urgent && !t.done ? 600 : 400, color: t.done ? "#A2A6AC" : t.urgent ? "#B4300E" : "#6B6F76" }
+    });
+
+    const zichtbaar = s.filter === "Alle" ? alle : alle.filter(t => t.bron === s.filter);
+    const filters = ["Alle", "Canvas", "Teams", "Magister", "Eigen"].map(f => ({
+      label: f,
+      onClick: set("filter", f),
+      style: { height: "32px", padding: "0 13px", borderRadius: "999px", border: s.filter === f ? "1px solid #17181A" : "1px solid #E0DDD5", background: s.filter === f ? "#17181A" : "#FFFFFF", color: s.filter === f ? "#FFFFFF" : "#43474D", fontSize: "12.5px", cursor: "pointer" }
+    }));
+
+    const rooster = [
+      { tijd: "08:30 – 09:20", vak: "Mediatheorie", lokaal: "B1.04", nu: false },
+      { tijd: "09:30 – 11:00", vak: "Interaction Design", lokaal: "A2.11", nu: true },
+      { tijd: "11:15 – 12:45", vak: "Concepting", lokaal: "A2.11", nu: false },
+      { tijd: "13:30 – 15:30", vak: "Projecturen", lokaal: "Studio 3", nu: false }
+    ].map(r => ({ ...r, rowStyle: { display: "flex", alignItems: "center", gap: "12px", padding: "9px 8px", borderRadius: "9px", background: r.nu ? "#E6F2EE" : "transparent", borderLeft: r.nu ? "2px solid " + ACCENT : "2px solid transparent" } }));
+
+    const lesStyle = { padding: "9px 10px", borderRadius: "9px", background: "#FCFBF8", border: "1px solid #EFEDE6" };
+    const week = [
+      { dag: "Maandag", datum: "07/09", vandaag: true, lessen: [{ tijd: "08:30", vak: "Mediatheorie", lokaal: "B1.04" }, { tijd: "09:30", vak: "Interaction Design", lokaal: "A2.11" }, { tijd: "11:15", vak: "Concepting", lokaal: "A2.11" }, { tijd: "13:30", vak: "Projecturen", lokaal: "Studio 3" }] },
+      { dag: "Dinsdag", datum: "08/09", vandaag: false, lessen: [{ tijd: "09:30", vak: "Vormgeving", lokaal: "A1.02" }, { tijd: "11:15", vak: "Engels", lokaal: "C0.07" }] },
+      { dag: "Woensdag", datum: "09/09", vandaag: false, lessen: [{ tijd: "08:30", vak: "Projecturen", lokaal: "Studio 3" }, { tijd: "13:30", vak: "Loopbaan", lokaal: "B0.11" }] },
+      { dag: "Donderdag", datum: "10/09", vandaag: false, lessen: [{ tijd: "09:30", vak: "Interaction Design", lokaal: "A2.11" }, { tijd: "11:15", vak: "Mediatheorie", lokaal: "B1.04" }, { tijd: "14:00", vak: "Projecturen", lokaal: "Studio 3" }] },
+      { dag: "Vrijdag", datum: "11/09", vandaag: false, lessen: [{ tijd: "10:00", vak: "Vormgeving", lokaal: "A1.02" }] }
+    ].map(d => ({
+      ...d,
+      colStyle: { border: "1px solid #E6E3DC", borderRadius: "13px", padding: "15px", background: d.vandaag ? "#FFFFFF" : "#FDFCFA", boxShadow: d.vandaag ? "inset 0 2px 0 0 " + ACCENT : "none" },
+      lessen: d.lessen.map(l => ({ ...l, style: lesStyle }))
+    }));
+
+    const cijferData = [
+      { vak: "Interaction Design", detail: "3 cijfers · laatste 4 sep", punten: [7.5, 8.0, 8.0] },
+      { vak: "Mediatheorie", detail: "2 cijfers · laatste 2 sep", punten: [5.8, 7.0] },
+      { vak: "Concepting", detail: "2 cijfers · laatste 29 aug", punten: [8.4, 8.0] },
+      { vak: "Vormgeving", detail: "3 cijfers · laatste 28 aug", punten: [7.2, 6.8, 7.4] },
+      { vak: "Engels", detail: "1 cijfer · laatste 26 aug", punten: [8.0] }
+    ];
+    const gem = arr => Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10;
+    const cijferKleur = v => (v < 5.5 ? "#B4300E" : v >= 8 ? "#0A5C4B" : "#17181A");
+    const cijfers = cijferData.map(c => {
+      const g = gem(c.punten);
+      return {
+        vak: c.vak,
+        detail: c.detail,
+        punten: c.punten.map(p => ({ waarde: p.toFixed(1), style: { fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", padding: "3px 7px", borderRadius: "6px", background: "#F4F2EC", color: cijferKleur(p) } })),
+        gemiddelde: g.toFixed(1),
+        gemStyle: { fontSize: "19px", fontWeight: 600, width: "50px", textAlign: "right", color: cijferKleur(g) }
+      };
+    });
+    const alleP = cijferData.flatMap(c => c.punten);
+
+    const laatsteCijfers = [
+      { vak: "Interaction Design", wat: "Prototype v1", cijfer: "8.0" },
+      { vak: "Mediatheorie", wat: "Deeltoets", cijfer: "7.0" },
+      { vak: "Concepting", wat: "Pitch", cijfer: "8.4" }
+    ].map(g => ({ ...g, cijferStyle: { fontFamily: "'JetBrains Mono', monospace", fontSize: "15px", fontWeight: 600, width: "38px", textAlign: "right", color: cijferKleur(parseFloat(g.cijfer)) } }));
+
+    const avatar = (initialen, eigen) => ({ width: "26px", height: "26px", flex: "none", borderRadius: "8px", background: eigen ? ACCENT : "#EDEBE5", color: eigen ? "#FFFFFF" : "#43474D", display: "grid", placeItems: "center", fontSize: "10.5px", fontWeight: 600 });
+
+    const berichten = s.berichten.map(m => ({
+      van: m.van,
+      tijd: m.tijd,
+      tekst: m.tekst,
+      initialen: m.initialen,
+      toonAvatar: !m.eigen,
+      rowStyle: { display: "flex", gap: "9px", justifyContent: m.eigen ? "flex-end" : "flex-start" },
+      avatarStyle: avatar(m.initialen, false),
+      bubbleWrapStyle: { maxWidth: "78%", display: "flex", flexDirection: "column", alignItems: m.eigen ? "flex-end" : "flex-start" },
+      metaStyle: { fontSize: "11px", color: "#63676E", marginBottom: "3px" },
+      bubbleStyle: { fontSize: "13.5px", lineHeight: 1.5, padding: "9px 12px", borderRadius: "12px", background: m.eigen ? ACCENT : "#F4F2EC", color: m.eigen ? "#FFFFFF" : "#2B2D31" }
+    }));
+
+    const groepData = [
+      { id: "g1", naam: "Groep 4 · App SintLucas", meta: "4 leden · gekoppeld aan Interaction Design" },
+      { id: "g2", naam: "Mediatheorie duo", meta: "2 leden · gekoppeld aan Mediatheorie" }
+    ];
+    const groepen = groepData.map(g => ({
+      naam: g.naam,
+      meta: g.meta,
+      onClick: set("groep", g.id),
+      style: { textAlign: "left", padding: "13px 14px", borderRadius: "12px", border: s.groep === g.id ? "1px solid " + ACCENT : "1px solid #E6E3DC", background: s.groep === g.id ? "#FFFFFF" : "#FDFCFA", cursor: "pointer" }
+    }));
+
+    const bronInfo = {
+      Canvas: { uitleg: "Open REST API met OAuth2. Cursussen, opdrachten en deadlines. Makkelijkste bron.", sync: "sync 15 min" },
+      Teams: { uitleg: "Microsoft Graph, OAuth2. Schoolbeheerder moet de app eerst goedkeuren.", sync: "sync via webhook" },
+      Magister: { uitleg: "Geen officiële publieke API. Voorlopig handmatig invoeren of een export uploaden.", sync: "handmatig" },
+      Eigen: { uitleg: "Eigen taken, notities en groepswerk. Deze data staat alleen bij ons.", sync: "realtime" }
+    };
+    const connections = ["Canvas", "Teams", "Magister", "Eigen"].map(naam => {
+      const aan = !!s.verbonden[naam];
+      const kapot = naam === "Canvas" && s.down;
+      const state = !aan ? "niet gekoppeld" : kapot ? "onbereikbaar" : "gekoppeld";
+      const kleur = !aan ? "#63676E" : kapot ? "#B4690E" : "#0A5C4B";
+      return {
+        naam,
+        state,
+        stateKort: !aan ? "uit" : kapot ? "fout" : "ok",
+        uitleg: bronInfo[naam].uitleg,
+        sync: aan && !kapot ? bronInfo[naam].sync : "—",
+        dotStyle: this.bronDot(aan ? BRON_KLEUR[naam] : "#D5D1C8"),
+        stateStyle: { fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: kleur },
+        btnLabel: aan ? "Verbreek" : "Koppel",
+        onToggle: () => this.setState(p => ({ verbonden: { ...p.verbonden, [naam]: !p.verbonden[naam] } })),
+        btnStyle: { height: "32px", padding: "0 14px", borderRadius: "8px", border: aan ? "1px solid #E0DDD5" : "1px solid " + ACCENT, background: aan ? "#FFFFFF" : ACCENT, color: aan ? "#43474D" : "#FFFFFF", fontSize: "12.5px", fontWeight: 500, cursor: "pointer" }
+      };
+    });
+
+    const pillOn = { height: "32px", padding: "0 13px", borderRadius: "9px", border: "1px solid #17181A", background: "#17181A", color: "#FFFFFF", fontSize: "12.5px", cursor: "pointer" };
+    const pillOff = { height: "32px", padding: "0 13px", borderRadius: "9px", border: "1px solid #E0DDD5", background: "#FFFFFF", color: "#43474D", fontSize: "12.5px", cursor: "pointer" };
+    const segOn = { height: "28px", padding: "0 14px", borderRadius: "7px", border: "none", background: "#FFFFFF", color: "#17181A", fontSize: "12.5px", fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.06)" };
+    const segOff = { height: "28px", padding: "0 14px", borderRadius: "7px", border: "none", background: "transparent", color: "#6B6F76", fontSize: "12.5px", fontWeight: 500, cursor: "pointer" };
+
+    const send = () => {
+      const tekst = s.concept.trim();
+      if (!tekst) return;
+      this.setState(p => ({
+        concept: "",
+        berichten: p.berichten.concat({ id: Date.now(), van: "Luca", initialen: "LV", tijd: "nu", tekst, eigen: true })
+      }));
+    };
+
+    return {
+      appName: this.props.appName ?? "Bundel",
+      studentName: this.props.studentName ?? "Luca Verhoeven",
+      initials: "LV",
+      tabs, connections, rooster, week, cijfers, filters, groepen, berichten, laatsteCijfers,
+      isDesktop: !mobile,
+      isMobile: mobile,
+      isVandaag: s.tab === "vandaag",
+      isTaken: s.tab === "taken",
+      isRooster: s.tab === "rooster",
+      isCijfers: s.tab === "cijfers",
+      isGroepen: s.tab === "groepen",
+      isBronnen: s.tab === "bronnen",
+      activeLabel: (tabDefs.find(t => t.id === s.tab) || tabDefs[0]).label,
+      sourceDown: s.down && s.verbonden.Canvas,
+      onToggleDown: () => this.setState(p => ({ down: !p.down })),
+      downBtnStyle: s.down ? pillOn : pillOff,
+      desktopBtnStyle: mobile ? segOff : segOn,
+      mobileBtnStyle: mobile ? segOn : segOff,
+      onDesktop: set("view", "desktop"),
+      onMobile: set("view", "mobiel"),
+      onGoTaken: set("tab", "taken"),
+      onGoGroepen: set("tab", "groepen"),
+      samenvatting: openCount + " openstaand · 4 lessen · gemiddeld " + gem(alleP).toFixed(1),
+      weekTaken: open.slice(0, 4).map(taakRij),
+      zichtbareTaken: zichtbaar.map(taakRij),
+      takenVoet: zichtbaar.length + " van " + alle.length + " opdrachten · genormaliseerd naar één model, ongeacht de bron",
+      gemiddelde: gem(alleP).toFixed(1),
+      chatPreview: s.berichten.slice(-2).map(m => ({ van: m.van, tijd: m.tijd, tekst: m.tekst, initialen: m.initialen, avatarStyle: avatar(m.initialen, m.eigen) })),
+      activeGroep: groepData.find(g => g.id === s.groep) || groepData[0],
+      showEncryptionBadge: this.props.showEncryptionBadge ?? true,
+      concept: s.concept,
+      onConceptChange: e => this.setState({ concept: e.target.value }),
+      onConceptKey: e => { if (e.key === "Enter") send(); },
+      onSend: send,
+      shellStyle: mobile
+        ? { width: "392px", maxWidth: "100%", minHeight: "760px", display: "grid", gridTemplateRows: "minmax(0, 1fr) auto", border: "1px solid #E0DDD5", borderRadius: "26px", background: "#FFFFFF", overflow: "hidden", boxShadow: "0 30px 70px -45px rgba(23,24,26,0.5)" }
+        : { width: "100%", maxWidth: "1140px", minHeight: "740px", display: "grid", gridTemplateColumns: "210px minmax(0, 1fr)", border: "1px solid #E0DDD5", borderRadius: "16px", background: "#FFFFFF", overflow: "hidden", boxShadow: "0 30px 70px -50px rgba(23,24,26,0.45)" },
+      mainStyle: mobile ? { padding: "16px 16px 20px", minWidth: 0, overflow: "hidden" } : { padding: "26px 28px 34px", minWidth: 0 },
+      twoColStyle: { display: "grid", gridTemplateColumns: mobile ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 1fr)", gap: "18px", marginBottom: "18px" },
+      weekGridStyle: { display: "grid", gridTemplateColumns: mobile ? "minmax(0, 1fr)" : "repeat(5, minmax(0, 1fr))", gap: "12px" },
+      groepGridStyle: { display: "grid", gridTemplateColumns: mobile ? "minmax(0, 1fr)" : "260px minmax(0, 1fr)", gap: "18px", alignItems: "start" },
+      bronGridStyle: { display: "grid", gridTemplateColumns: mobile ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: "14px" },
+      chatScrollStyle: { padding: "16px", display: "flex", flexDirection: "column", gap: "13px", minHeight: mobile ? "300px" : "380px", maxHeight: mobile ? "340px" : "420px", overflowY: "auto" }
+    };
+  }
+}
+
+</script>
+</body>
+</html>
