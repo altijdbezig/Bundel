@@ -502,37 +502,45 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 12vh 20px 20px;
+  padding: 10vh 20px 20px;
 }
 .overlay__backdrop {
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(23, 24, 26, 0.32);
+  background: rgba(23, 24, 26, 0.34);
   cursor: default;
 }
+
+/* Vaste hoogte, zodat het venster niet springt zodra er resultaten binnenkomen. */
 .searchbox {
   position: relative;
   z-index: 1;
-  width: min(620px, 100%);
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100%);
+  height: min(540px, 76vh);
   border: 1px solid var(--border-strong);
   border-radius: var(--r-panel);
   background: var(--surface-card);
   box-shadow: var(--shadow-float);
   overflow: hidden;
 }
+
 .searchbox__field {
   display: flex;
   align-items: center;
   gap: 11px;
+  flex: none;
   padding: 0 14px;
-  height: 52px;
-  border-bottom: 1px solid var(--border-hair);
+  height: 54px;
+  border-bottom: 1px solid var(--border-card);
   color: var(--ink-600);
 }
 .searchbox__input {
   flex: 1;
   height: 100%;
+  min-width: 0;
   border: none;
   background: none;
   outline: none;
@@ -541,41 +549,144 @@
 }
 .searchbox__input::placeholder { color: var(--ink-500); }
 .searchbox__close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
   border: none;
   background: none;
-  padding: 4px;
   color: var(--ink-600);
   cursor: pointer;
-  border-radius: 7px;
+  border-radius: 8px;
 }
 .searchbox__close:hover { background: var(--ink-100); color: var(--ink-900); }
 
-.searchbox__body { max-height: 56vh; overflow-y: auto; padding: var(--sp-3); }
-.searchbox__hint { padding: 6px; }
-.searchbox__count { display: block; padding: 2px 6px 8px; }
-.searchbox__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.result {
+.searchbox__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sp-3) var(--sp-2) var(--sp-3);
+}
+.searchbox__section { display: flex; flex-direction: column; }
+.searchbox__section + .searchbox__section {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border-hair);
+}
+.searchbox__groupTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 8px;
+}
+.searchbox__groupCount {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--ink-100);
+  color: var(--ink-600);
+  letter-spacing: 0;
+}
+.searchbox__hint { padding: 8px 10px 2px; }
+
+/* Snelkoppelingen in het lege venster */
+.shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; padding: 0 6px; }
+.shortcut {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 11px;
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  background: var(--surface-card);
+  color: var(--ink-800);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+.shortcut:hover { border-color: var(--brand-600); background: var(--brand-50); color: var(--brand-700); }
+
+/* Resultaatregel */
+.result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
-  padding: 10px;
+  padding: 10px 11px;
   border: none;
-  border-radius: 9px;
+  border-radius: 10px;
   background: none;
   text-align: left;
   cursor: pointer;
+  border-left: 2px solid transparent;
 }
-.result:hover { background: var(--surface-sunken); }
-.result__text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.result:hover,
+.result.is-active { background: var(--brand-50); border-left-color: var(--brand-600); }
+.result__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-hair);
+  color: var(--ink-800);
+}
+.result.is-active .result__icon,
+.result:hover .result__icon { background: var(--surface-card); border-color: var(--brand-200); color: var(--brand-700); }
+.result__text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .result__title {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.result__type { flex: none; }
+.result__hit { background: var(--brand-100); color: var(--brand-700); font-weight: 600; border-radius: 3px; padding: 0 1px; }
+.result__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-size: 11.5px;
+  color: var(--ink-600);
+}
+
+/* Voettekst met toetsen */
+.searchbox__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex: none;
+  padding: 9px 14px;
+  border-top: 1px solid var(--border-card);
+  background: var(--surface-sunken);
+  font-size: 11.5px;
+  color: var(--ink-600);
+  flex-wrap: wrap;
+}
+.searchbox__keys { display: inline-flex; align-items: center; gap: 5px; }
+.searchbox__total { margin-left: auto; }
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--surface-card);
+  color: var(--ink-800);
+}
+
+@media (max-width: 620px) {
+  .overlay { padding: 6vh 12px 12px; }
+  .searchbox { height: min(560px, 84vh); }
+  .result__source { display: none; }
+  .searchbox__foot { display: none; }
+}
 
 /* ---------------- Instellingen ---------------- */
 .settings { display: flex; flex-direction: column; gap: var(--sp-3); }

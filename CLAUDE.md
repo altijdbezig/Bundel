@@ -187,6 +187,19 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 | Zoeken | Eén venster over de app heen, opent met Ctrl+K, zoekt door opdrachten, rooster, cijfers, groepen en berichten. |
 | Visuele controle | Jayde kijkt zelf. De Chrome-extensie blijft localhost blokkeren. |
 
+**Prompt 7: zoeken duidelijker (4 vragen gesteld, 4 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Klachten | Resultaten waren kaal, het venster stond er raar bij, en het lege venster was saai. |
+| Ordening | Gegroepeerd per type met kopjes en een aantal per groep. |
+| Vorm | Blijft een venster dat opent met Ctrl+K, geen vast veld in de topbalk. |
+| Leeg venster | Snelkoppelingen naar de zes schermen plus de eerstvolgende deadline. |
+
+Wat daarvoor is aangepast: vaste vensterhoogte zodat het niet springt, icoon per resultaattype,
+bronnaam rechts, het gezochte stuk vet in de titel, pijltjestoetsen en Enter, en een voettekst
+met de toetsen. Op smalle schermen vallen de bronnaam en de voettekst weg.
+
 **Routes site:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -252,3 +265,8 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
   `EmptyState.jsx` in Vandaag, Opdrachten, Rooster en Cijfers. Meldingen en zoekresultaten
   komen ook uit `data.js`, dus ook die kant is klaar voor de echte API. Rendertest uitgebreid
   met de nieuwe schermen en met controles op de zoekresultaten.
+- **prompt 7**: zoekvenster herzien. Resultaten gegroepeerd per type met kopjes en tellers,
+  icoon per type, bron rechts, treffer vet gemarkeerd. Vaste hoogte zodat het venster niet
+  springt. Toetsenbordnavigatie met pijltjes en Enter. Leeg venster toont snelkoppelingen naar
+  de zes schermen en de eerstvolgende deadline. Rendertest controleert nu ook de inhoud van het
+  lege venster en de groepering.
