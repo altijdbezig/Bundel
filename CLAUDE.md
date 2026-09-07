@@ -151,6 +151,17 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
 | EN-teksten | Akkoord, geen herziening nodig. |
 | AltijdBezig | Geen logo en geen eigen site, dus alleen de naam als tekst. |
 
+**Prompt 4: afronding vragenronde (6 vragen gesteld, 6 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Contactadres | Blijft voorlopig een placeholder. Niet aandringen. |
+| Vercel-project | Jayde zet het zelf op. Root Directory `web`. |
+| Voorwaarden nakijken | Niet nodig. |
+| Wachtwoord vergeten | Echte auth komt eraan, dus de link blijft staan. Hij toont nu een melding in plaats van een dood anker. |
+| Cookiemelding | Niet nodig zolang er geen tracking is. |
+| Merge naar main | Ja. Projectpartner is nog niet begonnen, dus `Front-end` is samengevoegd met `main`. |
+
 **Routes:** `/` · `/login` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Home-secties:** hero + app-preview, bronnenstrip, probleem, oplossing/functies (`#functies`),
 "wat Bundel niet doet", privacyblok, platforms, FAQ, wachtlijst (`#wachtlijst`).
@@ -190,3 +201,8 @@ Warm grijs, geen blauwgrijs. Groen is het enige accentsignaal.
   `/voorwaarden`. `vercel.json` toegevoegd met SPA-rewrite; hostinguitleg in `web/README.md`.
   Nep-domein uit de app-preview gehaald. Electron vastgelegd als richting voor de desktop-app.
   Werk gecommit op `Front-end` en gepusht naar GitHub.
+- **prompt 4**: "wachtwoord vergeten" is geen dood anker meer maar een knop met een melding
+  (`login.forgotNotice`), klaar om te vervangen door een echte route zodra auth er is.
+  `Front-end` samengevoegd met `main` en beide gepusht. Rest van de antwoorden vroeg geen
+  codewijziging: contactadres blijft een placeholder, geen cookiemelding, voorwaarden
+  worden niet nagekeken.

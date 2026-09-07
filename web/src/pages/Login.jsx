@@ -16,7 +16,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
-  const [attempted, setAttempted] = useState(false)
+  const [notice, setNotice] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -24,7 +24,7 @@ export default function Login() {
     if (!EMAIL.test(email.trim())) next.email = t.login.invalidEmail
     if (!password) next.password = t.login.emptyPassword
     setErrors(next)
-    setAttempted(Object.keys(next).length === 0)
+    setNotice(Object.keys(next).length === 0 ? t.login.attempted : '')
   }
 
   return (
@@ -38,7 +38,7 @@ export default function Login() {
 
           <p className="notice auth__notice">{t.login.prototypeNotice}</p>
 
-          <button type="button" className="btn btn--secondary btn--block btn--lg auth__sso" onClick={() => setAttempted(true)}>
+          <button type="button" className="btn btn--secondary btn--block btn--lg auth__sso" onClick={() => setNotice(t.login.attempted)}>
             <IconMicrosoft size={17} />
             {t.login.school}
           </button>
@@ -74,9 +74,9 @@ export default function Login() {
             <div className="field">
               <span className="auth__labelRow">
                 <label htmlFor="login-password">{t.login.password}</label>
-                <a href="#wachtwoord" className="meta auth__forgot">
+                <button type="button" className="meta auth__forgot" onClick={() => setNotice(t.login.forgotNotice)}>
                   {t.login.forgot}
-                </a>
+                </button>
               </span>
               <input
                 id="login-password"
@@ -100,9 +100,9 @@ export default function Login() {
               {t.login.submit}
             </button>
 
-            {attempted && (
+            {notice && (
               <p className="notice" role="status">
-                {t.login.attempted}
+                {notice}
               </p>
             )}
           </form>

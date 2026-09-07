@@ -460,7 +460,15 @@
 .auth__divider { display: flex; align-items: center; gap: var(--sp-3); }
 .auth__divider .hair { flex: 1; }
 .auth__labelRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); }
-.auth__forgot { color: var(--ink-600); }
+.auth__forgot {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--ink-600);
+  cursor: pointer;
+  text-align: right;
+}
+.auth__forgot:hover { color: var(--brand-700); text-decoration: underline; }
 .auth__foot { padding-top: var(--sp-2); }
 
 .auth__aside {

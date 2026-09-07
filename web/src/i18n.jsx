@@ -121,6 +121,7 @@ export const nl = {
     invalidEmail: 'Vul een volledig e-mailadres in.',
     emptyPassword: 'Vul je wachtwoord in.',
     attempted: 'Inloggen is nog niet actief. De webversie is in ontwikkeling.',
+    forgotNotice: 'Wachtwoord herstellen kan zodra het inloggen echt werkt.',
     quote: 'Drie apps, één overzicht. En je data blijft waar hij hoort.',
     quoteBy: 'De belofte van Bundel',
     aside: [
@@ -395,6 +396,7 @@ export const en = {
     invalidEmail: 'Enter a complete email address.',
     emptyPassword: 'Enter your password.',
     attempted: 'Logging in is not active yet. The web version is in development.',
+    forgotNotice: 'Password recovery will work as soon as logging in does.',
     quote: 'Three apps, one overview. And your data stays where it belongs.',
     quoteBy: 'The promise of Bundel',
     aside: [
