@@ -27,7 +27,6 @@
 .appshell__brand:hover { text-decoration: none; }
 .appshell__brandName { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink-900); }
 
-.appshell__user { display: flex; align-items: center; gap: 10px; padding: 0 8px; }
 .appshell__avatar {
   width: 32px;
   height: 32px;
@@ -40,16 +39,6 @@
   font-size: 13px;
   font-weight: 600;
 }
-.appshell__userText { display: flex; flex-direction: column; min-width: 0; }
-.appshell__userName {
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.appshell__userMeta { font-size: 11px; color: var(--ink-600); }
-
 .appshell__nav { display: flex; flex-direction: column; gap: 2px; }
 .appshell__navItem {
   display: flex;
