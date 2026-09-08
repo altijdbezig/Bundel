@@ -33,6 +33,14 @@ import {
   getAttendance,
   getNotifications,
   getStudent,
+  getTomorrow,
+  getPeriods,
+  getAverage,
+  currentPeriod,
+  hourLabel,
+  periodFor,
+  assignmentStatus,
+  sourceUrl,
   search,
 } from './app/data'
 
@@ -162,6 +170,53 @@ async function main() {
   check('zoeken vindt een les', search('studio', 'nl').some((r) => r.type === 'lesson'))
   check('zoeken vindt een opmerking bij een cijfer', search('herkansen', 'nl').some((r) => r.type === 'grade'))
   check('vandaag heeft lessen', getToday('nl').lessons.length > 0)
+
+  /* Lesuren: een half uur per uur, uur 1 begint om 09:00. */
+  check('een les van 10:00 tot 11:00 is uur 3-4', hourLabel(10 * 60, 11 * 60) === '3-4')
+  check('een les van 11:00 tot 13:00 is uur 5-8', hourLabel(11 * 60, 13 * 60) === '5-8')
+  check('een les van 13:30 tot 16:30 is uur 10-15', hourLabel(13 * 60 + 30, 16 * 60 + 30) === '10-15')
+  check('een half uur les is een enkel uur', hourLabel(9 * 60, 9 * 60 + 30) === '1')
+  check('voor uur 1 is er geen lesuur', hourLabel(8 * 60, 8 * 60 + 30) === null)
+  /* Bij SintLucas begint uur 1 om 09:00, dus een les die eerder start valt
+     buiten de nummering en toont geen lesuur. Dat is beter dan een verkeerd
+     nummer, en de demo heeft er twee. */
+  const lessons = getWeek('nl', 2).flatMap((d) => d.lessons)
+  check('lessen vanaf 09:00 hebben een lesuur', lessons.filter((l) => l.start >= 9 * 60).every((l) => l.hours))
+  check('lessen voor 09:00 hebben er geen', lessons.filter((l) => l.start < 9 * 60).every((l) => l.hours === null))
+  check('het meeste heeft een lesuur', lessons.filter((l) => l.hours).length >= lessons.length - 2)
+
+  /* Morgen, zodat Vandaag na de laatste les niet leeg is. */
+  const tomorrow = getTomorrow('nl')
+  check('morgen bestaat', tomorrow !== null)
+  check('morgen is dinsdag', tomorrow.day === 'Dinsdag')
+  check('morgen heeft lessen', tomorrow.lessons.length === 2)
+
+  /* Periodes: 07/09 valt in periode 1. */
+  check('september valt in periode 1', periodFor('07/09') === 1)
+  check('december valt in periode 2', periodFor('15/12') === 2)
+  check('maart valt in periode 3', periodFor('01/03') === 3)
+  check('we zitten nu in periode 1', currentPeriod() === 1)
+  check('de demo heeft cijfers in een periode', getPeriods().length >= 1)
+  check('een gemiddelde per periode kan afwijken van het jaar', typeof getAverage(1) === 'number')
+  check('cijfers weten in welke periode ze vallen', getGrades('nl').flatMap((g) => g.entries).every((e) => e.period))
+  check('een lege periode geeft geen vakken terug', getGrades('nl', 4).length === 0)
+
+  /* De status van een opdracht komt van de bron, niet van je eigen vinkje. */
+  check('een verlopen opdracht heet te laat', assignmentStatus({ dueDate: '27/08' }) === 'late')
+  check('een opdracht van vandaag staat open', assignmentStatus({ dueDate: '07/09' }) === 'open')
+  check('de bron wint van de afleiding', assignmentStatus({ dueDate: '27/08', status: 'graded' }) === 'graded')
+  check('elke opdracht heeft een status', getAssignments('nl').every((a) => a.status))
+  check('er staat iets te laat', getAssignments('nl').some((a) => a.status === 'late'))
+
+  /* Doorlinken naar de bron. */
+  check('canvas heeft een adres', sourceUrl('canvas').includes('instructure.com'))
+  check('magister heeft een adres', sourceUrl('magister').includes('magister.net'))
+  check('teams heeft een adres', sourceUrl('teams').includes('teams.microsoft.com'))
+  check('eigen items linken nergens heen', sourceUrl('own') === null)
+  check('een adres per item wint van het adres van de bron', sourceUrl('canvas', { url: 'https://x.test/1' }) === 'https://x.test/1')
+  check('opdrachten hebben een adres', getAssignments('nl').every((a) => a.source === 'own' || a.sourceUrl))
+  check('lessen hebben een adres', getWeek('nl', 2)[0].lessons.every((l) => l.sourceUrl))
+  check('cijfers hebben een adres', getGrades('nl').flatMap((g) => g.entries).every((e) => e.sourceUrl))
 
   /* De toestand die uit de database komt. */
   check('niets afgevinkt bij de start', Object.keys(state.done).length === 0)

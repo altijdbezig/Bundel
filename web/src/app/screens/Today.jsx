@@ -8,7 +8,7 @@ import { signalLine } from '../signal'
 import GradeDialog from '../GradeDialog'
 import ScreenHeader from '../ScreenHeader'
 import { IconCalendar } from '../../components/Icons'
-import { getGroups, getRecentGrades, getSignals, getTimeline, getToday } from '../data'
+import { getGroups, getRecentGrades, getSignals, getTimeline, getToday, getTomorrow } from '../data'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
 
@@ -22,6 +22,7 @@ export default function Today() {
   const today = getToday(lang)
   const timeline = getTimeline(lang, ownItems)
   const signals = getSignals(lang, done)
+  const tomorrow = getTomorrow(lang)
   const recent = getRecentGrades(lang)
   const group = getGroups(lang)[0]
 
@@ -103,7 +104,11 @@ export default function Today() {
                     </span>
                   </span>
                 ) : isLesson ? (
-                  <button type="button" className="tl__body" onClick={() => setOpenLesson(item)}>
+                  <button
+                    type="button"
+                    className="tl__body"
+                    onClick={() => setOpenLesson({ lesson: item, day: { day: today.title, date: '' } })}
+                  >
                     <span className="tl__row">
                       <span className="tl__title">{item.subject}</span>
                       <span className="meta tl__room">{item.room}</span>
@@ -147,6 +152,42 @@ export default function Today() {
           })}
         </ol>
       </section>
+
+      {/* Morgen erbij, want na je laatste les is vandaag leeg en zegt dit scherm niets meer. */}
+      {tomorrow && (
+        <section className="card stack stack-3">
+          <div className="screen__cardHead">
+            <span className="label">
+              {c.tomorrow} · {tomorrow.day} {tomorrow.date}
+            </span>
+            <Link to="/app/rooster" className="meta">
+              {c.all}
+            </Link>
+          </div>
+
+          {tomorrow.lessons.length === 0 ? (
+            <p className="meta">{c.tomorrowEmpty}</p>
+          ) : (
+            <div className="stack">
+              {tomorrow.lessons.map((l) => (
+                <button
+                  type="button"
+                  key={l.time + l.subjectKey}
+                  className="lesson"
+                  onClick={() => setOpenLesson({ lesson: l, day: { day: tomorrow.day, date: tomorrow.date } })}
+                >
+                  <span className="lesson__time data">
+                    {l.time} - {l.end}
+                  </span>
+                  <span className="lesson__name">{l.subject}</span>
+                  {l.hours && <span className="meta lesson__hour">{fill(t.app.schedule.hour, { hours: l.hours })}</span>}
+                  <span className="lesson__room meta">{l.room}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ---------- Cijfers en groep als tweede rij ---------- */}
       <div className="screen__cols">
@@ -195,7 +236,11 @@ export default function Today() {
         </section>
       </div>
 
-      <LessonDialog lesson={openLesson} day={{ day: today.title, date: '' }} onClose={() => setOpenLesson(null)} />
+      <LessonDialog
+        lesson={openLesson?.lesson}
+        day={openLesson?.day}
+        onClose={() => setOpenLesson(null)}
+      />
       <GradeDialog entry={openGrade} onClose={() => setOpenGrade(null)} />
     </div>
   )

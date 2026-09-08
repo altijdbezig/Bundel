@@ -277,6 +277,7 @@ export default function Schedule() {
                       >
                         <span className="block__time data">
                           {l.time}
+                          {l.hours && <span className="block__hour">{fill(c.hour, { hours: l.hours })}</span>}
                           {isNow && <span className="block__nowTag">{c.now}</span>}
                         </span>
                         <LessonBody lesson={l} t={t} compact={short} />
@@ -346,6 +347,7 @@ export default function Schedule() {
                         <span className="agenda__times">
                           <span className="data">{l.time}</span>
                           <span className="data agenda__end">{l.end}</span>
+                          {l.hours && <span className="data agenda__hour">{fill(c.hour, { hours: l.hours })}</span>}
                         </span>
                         <span className="agenda__rail" aria-hidden="true" />
                         <span className="agenda__body">

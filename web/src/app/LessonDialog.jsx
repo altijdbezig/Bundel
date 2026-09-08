@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../i18n'
 import { useAppState } from './state'
 import Dialog, { DialogFacts, DialogSection } from './Dialog'
+import OpenInSource from './OpenInSource'
 import { signalLine } from './signal'
 import {
   getSubjectAttendance,
@@ -69,6 +70,7 @@ export default function LessonDialog({ lesson, day, onClose }) {
         items={[
           { label: c.when, value: `${day ? `${day.day} ${day.date}` : ''} ${lesson.time} - ${lesson.end}`.trim() },
           { label: c.duration, value: length },
+          { label: t.app.schedule.hourLabel, value: lesson.hours ?? null },
           { label: c.room, value: lesson.room },
           { label: c.teacher, value: lesson.teacher },
         ]}
@@ -126,6 +128,8 @@ export default function LessonDialog({ lesson, day, onClose }) {
           </div>
         </DialogSection>
       )}
+
+      <OpenInSource source="magister" url={lesson.sourceUrl} />
 
       <DialogSection
         title={c.group}

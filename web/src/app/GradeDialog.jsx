@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../i18n'
 import Dialog, { DialogFacts, DialogSection } from './Dialog'
+import OpenInSource from './OpenInSource'
 import { sourceColor, sourceName } from './data'
 
 const markClass = (value) => (value < 5.5 ? 'is-low' : value >= 8 ? 'is-high' : '')
@@ -43,12 +44,15 @@ export default function GradeDialog({ entry, onClose }) {
           { label: c.date, value: entry.date },
           { label: c.weight, value: fill(c.weightValue, { weight: entry.weight }) },
           { label: c.teacher, value: entry.teacher },
+          { label: c.period, value: entry.period ? fill(c.periodNumber, { number: entry.period }) : null },
         ]}
       />
 
       <DialogSection title={c.remark} action={c.detail.toSchedule} onAction={() => go('/app/rooster')}>
         {entry.remark ? <p className="remark">{entry.remark}</p> : <p className="meta">{c.noRemark}</p>}
       </DialogSection>
+
+      <OpenInSource source="magister" url={entry.sourceUrl} />
     </Dialog>
   )
 }

@@ -7,10 +7,12 @@ import GradeDialog from '../GradeDialog'
 import Dialog, { DialogFacts, DialogSection } from '../Dialog'
 import { IconGrades, IconInbox } from '../../components/Icons'
 import {
+  currentPeriod,
   getAssignments,
   getAverage,
   getGrades,
   getGradeStats,
+  getPeriods,
   getRecentGrades,
   sourceColor,
   sourceName,
@@ -40,10 +42,16 @@ export default function Grades() {
   const [openSubject, setOpenSubject] = useState(null)
   const [openEntry, setOpenEntry] = useState(null)
 
-  const grades = getGrades(lang)
-  const recent = getRecentGrades(lang)
-  const overall = getAverage()
-  const stats = getGradeStats(lang)
+  /* Een rapportcijfer gaat over een periode, dus daar begin je in. Het hele
+     jaar blijft te kiezen, want dat is een ander en ook nuttig getal. */
+  const periods = getPeriods()
+  const [period, setPeriod] = useState(() => (periods.includes(currentPeriod()) ? currentPeriod() : null))
+
+  const grades = getGrades(lang, period)
+  const recent = getRecentGrades(lang, period)
+  const overall = getAverage(period)
+  const yearAverage = getAverage()
+  const stats = getGradeStats(lang, period)
 
   const detailAssignments = openSubject
     ? getAssignments(lang).filter((a) => a.subjectKey === openSubject.subjectKey)
@@ -58,10 +66,40 @@ export default function Grades() {
     <div className="screen">
       <ScreenHeader title={c.title} subtitle={`${c.subtitle} · ${sourceName('magister', lang)}`} source="magister">
         <div className="grades__overall">
-          <span className="label">{c.weighted}</span>
+          <span className="label">{period ? fill(c.periodNumber, { number: period }) : c.periodAll}</span>
           <span className={`grades__overallValue data ${markClass(overall)}`}>{overall.toFixed(1)}</span>
+          {period && (
+            <span className="meta">
+              {c.yearAverage} {yearAverage.toFixed(1)}
+            </span>
+          )}
         </div>
       </ScreenHeader>
+
+      {/* Kiezen over welke periode het gaat. */}
+      {periods.length > 1 && (
+        <div className="pills">
+          {periods.map((number) => (
+            <button
+              key={number}
+              type="button"
+              className={`pill ${period === number ? 'is-active' : ''}`}
+              aria-pressed={period === number}
+              onClick={() => setPeriod(number)}
+            >
+              {fill(c.periodNumber, { number })}
+            </button>
+          ))}
+          <button
+            type="button"
+            className={`pill ${period === null ? 'is-active' : ''}`}
+            aria-pressed={period === null}
+            onClick={() => setPeriod(null)}
+          >
+            {c.periodAll}
+          </button>
+        </div>
+      )}
 
       {/* Onvoldoendes uitlichten */}
       {(stats.failing.length > 0 || stats.lowMarks.length > 0) && (
@@ -79,7 +117,7 @@ export default function Grades() {
       {grades.length === 0 && (
         <section className="card">
           <EmptyState
-            title={t.app.empty.grades}
+            title={period ? c.periodEmpty : t.app.empty.grades}
             hint={t.app.empty.gradesHint}
             to="/app/bronnen"
             linkLabel={t.app.empty.sourceLink}

@@ -1746,3 +1746,67 @@
   text-align: center;
 }
 .appboot__text { color: var(--ink-600); }
+
+/* ================================================================
+   Doorlinken naar de bron
+   ================================================================ */
+.opensource {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border-hair);
+}
+.opensource__btn { align-self: flex-start; }
+.opensource__btn:hover { text-decoration: none; }
+.opensource__note { line-height: 1.5; }
+
+/* ================================================================
+   Wat de bron over een opdracht zegt
+   ================================================================ */
+.status {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-card);
+  background: var(--surface-sunken);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-600);
+  white-space: nowrap;
+}
+.status--submitted {
+  border-color: var(--brand-200);
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+.status--graded {
+  border-color: var(--brand-300);
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+.status--late {
+  border-color: var(--err-border);
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+
+/* ================================================================
+   Lesuren
+   ================================================================ */
+.block__hour {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--ink-100);
+  color: var(--ink-600);
+  font-size: 9.5px;
+}
+.block.is-now .block__hour { background: var(--brand-200); color: var(--brand-700); }
+.agenda__hour { color: var(--ink-500); font-size: 10.5px; }
+.lesson__hour { flex: none; }
+
+@media (max-width: 620px) {
+  .status { display: none; }
+}

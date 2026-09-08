@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { fill, useI18n } from '../i18n'
 import { useAppState } from './state'
 import Dialog, { DialogFacts, DialogSection } from './Dialog'
+import OpenInSource from './OpenInSource'
+import StatusBadge from './StatusBadge'
 import { getWeek, CURRENT_WEEK_INDEX } from './data'
 
 /** Venster met alles wat bij een opdracht hoort. */
@@ -38,7 +40,8 @@ export default function AssignmentDialog({ assignment, onClose }) {
           { label: c.subject, value: assignment.subject },
           { label: c.due, value: `${assignment.due}${assignment.dueTime ? ` · ${assignment.dueTime}` : ''}` },
           { label: c.source, value: assignment.sourceName },
-          { label: c.status, value: isDone ? c.finished : c.open },
+          { label: c.status, value: <StatusBadge status={assignment.status} source={assignment.sourceName} /> },
+          { label: t.app.status.ownTick, value: isDone ? c.finished : c.open },
         ]}
       />
 
@@ -56,6 +59,8 @@ export default function AssignmentDialog({ assignment, onClose }) {
           ))}
         </div>
       </DialogSection>
+
+      <OpenInSource source={assignment.source} url={assignment.sourceUrl} />
 
       <div className="dlg__foot">
         <button

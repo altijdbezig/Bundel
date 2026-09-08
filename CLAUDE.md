@@ -93,7 +93,7 @@ Bundel/
       │              state.jsx · AppLayout.jsx · StartScreen.jsx ·
       │              Dialog.jsx · ScreenHeader.jsx · EmptyState.jsx · LessonDialog.jsx ·
       │              AssignmentDialog.jsx · GradeDialog.jsx · OwnItemDialog.jsx ·
-      │              signal.js · SearchDialog.jsx ·
+      │              signal.js · SearchDialog.jsx · OpenInSource.jsx · StatusBadge.jsx ·
       │              NotificationsPanel.jsx ·
       │              screens/ (9 schermen, incl. Attendance)
       └─ pages/      Home · Login · Download · Privacy · Terms · About · NotFound
@@ -522,6 +522,25 @@ schooleigen tools MijnLucas, StudyCoach en Portflow.
 | Magister | Eerst de school vragen of er een officiele weg is, via de leverancier of de beheerder. Geen onofficiele API, want die botst waarschijnlijk met de voorwaarden en valt om zodra Magister hem dichtzet. |
 | Gevolg daarvan | Rooster, cijfers, afwezigheid en lesuren blijven op demodata tot dat antwoord er is. Lesuren en periodes worden wel alvast in het model en de schermen gebouwd, zodat er straks alleen een andere invoer nodig is. |
 
+**Prompt 23: vier dingen uit de vergelijking gebouwd (4 vragen gesteld, 4 beantwoord)**
+
+Alleen `web/`. `server/` is niet aangeraakt, dat ligt stil op verzoek.
+
+| Onderwerp | Keuze |
+|---|---|
+| Doorlinken | Een knop onderaan het venster, niet op elke regel. De lijsten blijven schoon en je klikt toch al op een item. Nieuw bestand `OpenInSource.jsx`, gedeeld door de les-, opdracht- en cijferpop-up. |
+| Waar hij heen wijst | Zolang er geen koppeling is naar de voorpagina van de bron. Levert een connector later een `url` per item, dan wint die en kom je op het item zelf uit. De adressen staan in `SOURCE_LINKS` in `data.js`. |
+| Statussen | Vier: nog te doen, ingeleverd, nagekeken, te laat. Te laat is een eigen status en geen kleurtje bij open, want het betekent iets anders. |
+| Bron tegenover eigen vinkje | Links je vinkje, rechts de status als badge. `assignmentStatus()` neemt de status van de bron als die er is, en leidt hem anders af uit de deadline. Zo werkt het scherm nu al en klopt het straks vanzelf. |
+| Lesuren | Gerekend, niet opgeslagen. Bij SintLucas duurt een lesuur een half uur en begint uur 1 om 09:00, af te lezen uit de Magister-screenshot (10:00 tot 11:00 is uur 3-4). Staat in `LESSON_HOUR` in `data.js`. |
+| Lessen voor 09:00 | Die vallen buiten de nummering en tonen geen lesuur. Beter niets dan een verkeerd nummer. De demo heeft er twee, want die tijden zijn eerder verzonnen en passen niet op het echte raster. |
+| Morgen | Eigen kaart onder de tijdlijn op Vandaag, met dezelfde lespop-up. De dag gaat nu mee naar het venster, anders stond de datum van vandaag boven een les van morgen. |
+| Periodes | Vier blokken op datum, in `PERIODS` in `data.js`. Het scherm opent op de periode waar je in zit, met het jaargemiddelde ernaast. Levert een bron zelf een periode, dan wint die. |
+
+Geen schemawijziging nodig: lesuren en periodes volgen uit tijd en datum, en de status wordt
+afgeleid zolang er geen bron is. Alleen als Canvas straks een echte status meelevert komt er een
+kolom bij, en dat is werk voor de back-end.
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -801,3 +820,12 @@ schooleigen tools MijnLucas, StudyCoach en Portflow.
   bronstatus, met een eigen vinkje ernaast als eigen notitie. Magister gaat pas verder als de
   school zegt of er een officiele weg is, dus geen onofficiele API. En `server/` ligt stil tot
   Jayde erom vraagt.
+- **prompt 23**: vier dingen uit die lijst gebouwd, alleen aan de voorkant. Doorlinken naar de
+  bron via `OpenInSource.jsx` in de drie vensters, de bronstatus naast je eigen vinkje via
+  `StatusBadge.jsx` en `assignmentStatus()`, lesuren in het rooster en op Vandaag, morgen als
+  kaart onder de tijdlijn, en periodes bij de cijfers met het jaargemiddelde ernaast. Alles
+  zonder schemawijziging: lesuren en periodes worden gerekend, de status wordt afgeleid tot een
+  bron hem meelevert. De rendertest ving twee fouten: `week: 'Week {number}'` staat in beide
+  talen identiek, waardoor de Engelse lesuurteksten in het Nederlandse blok belandden en Engels
+  ze helemaal miste, en de aanname dat elke les een lesuur heeft klopte niet voor de lessen die
+  om 08:30 beginnen.

@@ -17,6 +17,25 @@ const pick = (value, lang) => (value && typeof value === 'object' && 'nl' in val
 
 export const SOURCE_KEYS = ['canvas', 'teams', 'magister', 'own']
 
+/**
+ * Waar je bij een bron terechtkomt als je zelf iets wil doen.
+ *
+ * Bundel schrijft niets terug, dus inleveren, reageren en een cijfer inzien
+ * gebeurt in de bron zelf. Elk item krijgt daarom een knop naar de plek waar
+ * dat kan. Zolang er geen echte koppeling is wijst die naar de voorpagina van
+ * de bron. Zodra een connector een `url` per item meelevert wint die, want dan
+ * kom je op de opdracht zelf uit in plaats van op het dashboard.
+ *
+ * Deze adressen horen bij SintLucas. Bij een andere school zijn ze anders, dus
+ * dit is het eerste dat verhuist zodra er meer dan een school is.
+ */
+const SOURCE_LINKS = {
+  canvas: 'https://sintlucas.instructure.com',
+  teams: 'https://teams.microsoft.com',
+  magister: 'https://sintlucas.magister.net',
+  own: null,
+}
+
 const SOURCES = {
   canvas: {
     name: 'Canvas',
@@ -59,6 +78,53 @@ const SOURCES = {
     lastSync: '12:12',
   },
 }
+
+/**
+ * Lesuren.
+ *
+ * Magister nummert de dag in lesuren en studenten praten zo ook: "het vijfde
+ * uur" zegt meer dan "11:00". Bij SintLucas duurt een lesuur een half uur en
+ * begint uur 1 om 09:00, dus een les van 11:00 tot 13:00 is uur 5 tot en met 8.
+ *
+ * Dit is een schoolregel, geen gegeven per les, dus het wordt gerekend en niet
+ * opgeslagen. Klopt het rooster van een andere school niet met deze twee
+ * getallen, dan is dit de enige plek die verandert.
+ */
+export const LESSON_HOUR = { firstStartsAt: 9 * 60, minutes: 30 }
+
+/** Het lesuur waarin dit tijdstip valt. Onder uur 1 wordt het null. */
+export function hourAt(minutes) {
+  const offset = minutes - LESSON_HOUR.firstStartsAt
+  if (offset < 0) return null
+  return Math.floor(offset / LESSON_HOUR.minutes) + 1
+}
+
+/** "3-4" voor een les van 10:00 tot 11:00, of "3" als het er maar een is. */
+export function hourLabel(start, finish) {
+  const first = hourAt(start)
+  /* De eindtijd valt op de grens van het volgende uur, dus een minuut eerder. */
+  const last = hourAt(Math.max(start, finish - 1))
+  if (first === null || last === null) return null
+  return first === last ? String(first) : `${first}-${last}`
+}
+
+/**
+ * Periodes.
+ *
+ * Een rapportcijfer gaat over een periode, niet over het hele jaar. Bundel
+ * middelde tot nu toe over alles, en dat is een ander getal dan wat er op je
+ * rapport staat. De grenzen hieronder zijn de gebruikelijke vier blokken.
+ *
+ * Ook dit is een schoolregel: de periode volgt uit de datum van het cijfer, dus
+ * er hoeft niets extra's opgeslagen te worden. Levert een bron later zelf een
+ * periode mee, dan wint die.
+ */
+export const PERIODS = [
+  { number: 1, from: '01/08', to: '31/10' },
+  { number: 2, from: '01/11', to: '31/01' },
+  { number: 3, from: '01/02', to: '15/04' },
+  { number: 4, from: '16/04', to: '31/07' },
+]
 
 /**
  * Vaste "nu" van de demo: maandag 10:15, midden in Interaction Design.
@@ -191,6 +257,8 @@ export function getWeek(lang, index = CURRENT_WEEK) {
       teacher: TEACHERS[l.subject],
       start: toMinutes(l.time),
       finish: toMinutes(l.end),
+      hours: hourLabel(toMinutes(l.time), toMinutes(l.end)),
+      sourceUrl: sourceUrl('magister', l),
       /* Hoort er die dag een deadline bij dit vak? Dat verbindt rooster en opdrachten. */
       deadline: ASSIGNMENTS.some((a) => a.dueDate === d.date && a.subject === l.subject),
     })),
@@ -232,6 +300,38 @@ const dateKey = (value) => {
   return month * 100 + day
 }
 
+/** In welke periode valt deze datum? Periode 2 loopt over de jaarwisseling. */
+export function periodFor(date) {
+  if (!date) return null
+  const key = dateKey(date)
+  const found = PERIODS.find((p) => {
+    const from = dateKey(p.from)
+    const to = dateKey(p.to)
+    return from <= to ? key >= from && key <= to : key >= from || key <= to
+  })
+  return found ? found.number : null
+}
+
+/**
+ * De status van een opdracht, zoals de bron hem kent: nog te doen, ingeleverd,
+ * nagekeken, of te laat.
+ *
+ * Zodra Canvas of Teams echt gekoppeld is levert de bron dit mee en wint dat
+ * altijd, want die weet het en Bundel niet. Zolang dat er niet is wordt het
+ * hier afgeleid uit wat er wel staat. Jouw eigen vinkje staat hier los van: dat
+ * is een notitie van jezelf en verandert niets aan wat de bron zegt.
+ */
+export function assignmentStatus(assignment) {
+  if (assignment.status) return assignment.status
+  if (assignment.dueDate && dateKey(assignment.dueDate) < dateKey(TODAY_DATE)) return 'late'
+  return 'open'
+}
+
+/** Waar je deze opdracht kunt inleveren. Per item als de bron dat meelevert. */
+export function sourceUrl(source, item = null) {
+  return item?.url ?? SOURCE_LINKS[source] ?? null
+}
+
 export function getAssignments(lang) {
   return [...ASSIGNMENTS].sort((a, b) => dateKey(a.dueDate) - dateKey(b.dueDate)).map((a) => ({
     ...a,
@@ -239,8 +339,11 @@ export function getAssignments(lang) {
     subjectKey: a.subject,
     subject: pick(SUBJECTS[a.subject], lang),
     due: pick(a.due, lang),
+    status: assignmentStatus(a),
     sourceName: pick(SOURCES[a.source].name, lang),
     sourceColor: SOURCES[a.source].color,
+    sourceUrl: sourceUrl(a.source, a),
+    period: periodFor(a.dueDate),
   }))
 }
 
@@ -257,6 +360,20 @@ export function assignmentTerm(dueDate) {
   if (dateKey(dueDate) < dateKey(TODAY_DATE)) return 'overdue'
   if (currentWeekDates().includes(dueDate)) return 'week'
   return 'later'
+}
+
+/**
+ * De lessen van morgen, met de dag erbij.
+ *
+ * Na je laatste les is Vandaag leeg en daarmee nutteloos. Magister lost dat op
+ * door morgen eronder te zetten, en dat doen wij ook. Valt morgen buiten de
+ * week, dan is er niets te tonen: de demo loopt van maandag tot vrijdag.
+ */
+export function getTomorrow(lang) {
+  const week = getWeek(lang, CURRENT_WEEK)
+  const day = week[TODAY_INDEX + 1]
+  if (!day) return null
+  return { ...day, lessons: day.lessons }
 }
 
 /**
@@ -321,11 +438,35 @@ const gradeEntry = (entry, subjectKey, lang) => ({
   subjectKey,
   subject: pick(SUBJECTS[subjectKey], lang),
   teacher: TEACHERS[subjectKey],
+  /* Levert de bron zelf een periode, dan wint die. Anders volgt hij uit de datum. */
+  period: entry.period ?? periodFor(entry.date),
+  sourceUrl: sourceUrl('magister', entry),
 })
 
-export function getGrades(lang) {
+/**
+ * De cijfers van een periode, of van het hele jaar als er geen periode is
+ * gekozen. Alles wat met cijfers rekent gaat hierlangs, zodat het gemiddelde
+ * op elk scherm over dezelfde verzameling gaat.
+ */
+function entriesIn(entries, period) {
+  if (!period) return entries
+  return entries.filter((e) => (e.period ?? periodFor(e.date)) === period)
+}
+
+/** Welke periodes komen er in de cijfers voor, oplopend. */
+export function getPeriods() {
+  const found = new Set(GRADES.flatMap((g) => g.entries.map((e) => e.period ?? periodFor(e.date))))
+  return [...found].filter((p) => p !== null).sort((a, b) => a - b)
+}
+
+/** De periode waar je nu in zit, voor de standaardkeuze op het scherm. */
+export function currentPeriod() {
+  return periodFor(TODAY_DATE)
+}
+
+export function getGrades(lang, period = null) {
   return GRADES.map((g) => {
-    const entries = g.entries.map((e) => gradeEntry(e, g.subject, lang))
+    const entries = entriesIn(g.entries, period).map((e) => gradeEntry(e, g.subject, lang))
     const values = entries.map((e) => e.value)
     /* Trend: het laatste cijfer tegenover het cijfer daarvoor. */
     const trend = values.length > 1 ? values[values.length - 1] - values[values.length - 2] : 0
@@ -336,36 +477,37 @@ export function getGrades(lang) {
       teacher: TEACHERS[g.subject],
       entries,
       marks: values,
-      average: weighted(g.entries),
+      average: weighted(entriesIn(g.entries, period)),
       count: entries.length,
-      last: entries[entries.length - 1].date,
+      last: entries.length > 0 ? entries[entries.length - 1].date : null,
       trend: Math.round(trend * 10) / 10,
+      period,
     }
-  })
+  }).filter((g) => g.count > 0)
 }
 
 /** Alle cijfers op volgorde van datum, nieuwste eerst. */
-export function getRecentGrades(lang) {
-  return GRADES.flatMap((g) => g.entries.map((e) => gradeEntry(e, g.subject, lang))).sort(
+export function getRecentGrades(lang, period = null) {
+  return GRADES.flatMap((g) => entriesIn(g.entries, period).map((e) => gradeEntry(e, g.subject, lang))).sort(
     (a, b) => dateKey(b.date) - dateKey(a.date),
   )
 }
 
-export function getAverage() {
-  return weighted(GRADES.flatMap((g) => g.entries))
+export function getAverage(period = null) {
+  return weighted(GRADES.flatMap((g) => entriesIn(g.entries, period)))
 }
 
 /** Verdeling van alle cijfers en de vakken die onder de 5.5 staan. */
-export function getGradeStats(lang) {
-  const all = GRADES.flatMap((g) => g.entries.map((e) => e.value))
+export function getGradeStats(lang, period = null) {
+  const all = GRADES.flatMap((g) => entriesIn(g.entries, period).map((e) => e.value))
   const buckets = [4, 5, 6, 7, 8, 9].map((n) => ({
     n,
     count: all.filter((m) => Math.floor(m) === n).length,
   }))
-  const grades = getGrades(lang)
+  const grades = getGrades(lang, period)
   const failing = grades.filter((g) => g.average < 5.5)
   const lowMarks = grades.filter((g) => g.marks.some((m) => m < 5.5))
-  const withRemark = getRecentGrades(lang).filter((e) => e.remark).length
+  const withRemark = getRecentGrades(lang, period).filter((e) => e.remark).length
 
   return { total: all.length, buckets, max: Math.max(...buckets.map((b) => b.count)), failing, lowMarks, withRemark }
 }
@@ -373,6 +515,7 @@ export function getGradeStats(lang) {
 export function getGroups(lang) {
   return GROUPS.map((g) => ({
     ...g,
+    sourceUrl: sourceUrl('teams', g),
     subjectKey: g.subject,
     name: pick(g.name, lang),
     subject: pick(SUBJECTS[g.subject], lang),

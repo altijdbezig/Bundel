@@ -4,6 +4,7 @@ import { useAppState } from '../state'
 import EmptyState from '../EmptyState'
 import ScreenHeader from '../ScreenHeader'
 import AssignmentDialog from '../AssignmentDialog'
+import StatusBadge from '../StatusBadge'
 import { assignmentTerm, getAssignments, getSources } from '../data'
 
 /* Volgorde van de groepen op het scherm. */
@@ -110,10 +111,13 @@ export default function Assignments() {
           <div className="stack">
             {g.items.map((a) => (
               <div key={a.id} className="task task--row">
+                {/* Links jouw eigen vinkje, rechts wat de bron zegt. Die twee
+                    zijn niet hetzelfde en horen dus niet op elkaar te lijken. */}
                 <button
                   type="button"
                   className="task__check"
-                  aria-label={c.markDone}
+                  aria-label={t.app.status.ownTick}
+                  title={t.app.status.ownTickNote}
                   onClick={() => toggleDone(a.id)}
                 />
                 <button type="button" className="task__open" onClick={() => setOpen(a)}>
@@ -124,6 +128,7 @@ export default function Assignments() {
                       {a.subject} · {a.sourceName}
                     </span>
                   </span>
+                  <StatusBadge status={a.status} source={a.sourceName} />
                   <span className={`task__due meta ${g.term === 'overdue' || a.urgent ? 'is-urgent' : ''}`}>
                     {a.due}
                   </span>
@@ -147,7 +152,8 @@ export default function Assignments() {
                 <button
                   type="button"
                   className="task__check is-checked"
-                  aria-label={c.markDone}
+                  aria-label={t.app.status.ownTick}
+                  title={t.app.status.ownTickNote}
                   aria-pressed
                   onClick={() => toggleDone(a.id)}
                 />
@@ -157,7 +163,8 @@ export default function Assignments() {
                     <span className="task__title">{a.title}</span>
                     <span className="task__meta meta">{a.subject}</span>
                   </span>
-                  <span className="task__due meta">{c.done}</span>
+                  <StatusBadge status={a.status} source={a.sourceName} />
+                  <span className="task__due meta">{a.due}</span>
                 </button>
               </div>
             ))}
