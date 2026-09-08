@@ -27,8 +27,8 @@ Projectgeheugen voor Claude Code. Wordt na **elke** prompt bijgewerkt.
    nieuwe bestanden en openstaande vragen hier vastleggen. Nooit weggooien, alleen aanvullen.
 4. **Branches.** Het project wordt met z'n tweeën gemaakt en heeft drie branches:
    - `main`: alleen samengevoegd werk, hier niet direct op committen
-   - `Front-end`: website, UI, styling, componenten, teksten (**Claude werkt hier**)
-   - `Back-end`: API, database, koppelingen, auth (van de projectpartner, afblijven)
+   - `Front-end`: website, UI, styling, componenten, teksten (van Jayden)
+   - `Back-end`: API, database, koppelingen, auth (van Benjamin, **Claude werkt hier**)
    Kies de branch op basis van wat je maakt. Bij twijfel: vragen.
 5. Taal richting gebruiker: **Nederlands**. Code, commits en variabelen: Engels.
 6. Design volgt de merkrichtlijnen in `Claude Design/Branding/`. Niets afwijkends verzinnen.
@@ -57,10 +57,18 @@ Geen enkele school bij naam noemen.
 ```
 Bundel/
 ├─ CLAUDE.md                                  <- dit bestand
+├─ .nvmrc                                     welke node CI gebruikt (prompt 19)
+├─ .github/workflows/ci.yml                   bouwen en de rendertest bij elke PR (prompt 19)
 ├─ Claude Design/
 │  ├─ Branding/Bundel Branding Kit.dc.html    merkrichtlijnen, 8 tabs
 │  └─ Prototype/Bundel.dc.html                app-prototype, desktop + mobiel
-├─ supabase/migrations/                       het databaseschema, vier migraties (prompt 16)
+├─ supabase/migrations/                       het databaseschema, zes migraties (prompt 16, 19)
+├─ server/                                    de kant die met de bronnen praat (prompt 19)
+│  ├─ README.md                               waarom dit niet in web/ staat, en het contract
+│  ├─ package.json · tsconfig.json · .env.example
+│  └─ src/
+│     ├─ connectors/  types.ts (contract) · index.ts (registry) · index.test.ts
+│     └─ crypto/      tokens.ts (versleutelen) · tokens.test.ts
 └─ web/                                       de website (prompt 1)
    ├─ README.md                               draaien, structuur, wat nog niet werkt
    ├─ index.html · vite.config.js · package.json · vercel.json
@@ -372,6 +380,29 @@ Wat nog niet gecontroleerd is: het adres van de site op Vercel is hier niet beke
 gepubliceerde build de variabelen echt bevat is niet vastgesteld. `bundel.vercel.app` is de
 site van iemand anders. De Redirect URLs in Supabase zijn van buitenaf niet te lezen.
 
+**Prompt 19: de back-end op gang (geen vragenronde, opdracht lag vast)**
+
+Deze prompt raakt met opzet niets aan de voorkant. Alleen `store.js` is veranderd, en dan nog
+alleen aan de kant die schrijft. Wat de schermen te zien krijgen is regel voor regel hetzelfde.
+
+| Onderwerp | Keuze |
+|---|---|
+| Eigenaarschap | Jayden werkt op `Front-end`, Benjamin op `Back-end`. Regel 4 hierboven klopte niet meer en is aangepast. |
+| `is_demo` | Boolean op elke tabel die `store.js` vult, dertien stuks. Standaard false, bestaande rijen op true, want alles wat er nu staat is demo. |
+| Wat geen `is_demo` krijgt | `waitlist` en `profiles` staan het niet, en `own_items` ook niet: dat maakt de gebruiker zelf, dus dat is nooit demo. |
+| Waarom | Zodra de eerste connector echte rijen schrijft staan demo en echt in dezelfde tabel. Zonder vlag is de demo er niet meer uit te halen. |
+| `connections` | Een rij per gebruiker per bron. Tokens versleuteld in `access_token_encrypted` en `refresh_token_encrypted`, RLS aan, vier policies, uniek op (user_id, source). |
+| Welke bronnen | `canvas` en `microsoft`. Microsoft levert de bron Teams. Magister heeft nog geen koppeling, want daar is geen open aanmeldweg voor. |
+| Tokens en de browser | RLS gaat over rijen, dus de tokens zijn met de rechten op de kolom afgeschermd. Eerst `revoke all` voor `anon` en `authenticated`, daarna per kolom teruggeven, want een recht op de hele tabel dekt alle kolommen en een revoke op een losse kolom haalt dat niet weg. De app ziet dus wel dat er een koppeling is, maar komt niet bij het token, ook niet versleuteld. |
+| Versleutelen | AES-256-GCM, sleutel van 32 bytes uit `BUNDEL_TOKEN_KEY`. GCM controleert ook, dus een aangepaste rij valt bij het ontsleutelen door de mand. |
+| Nooit loggen | Geen token in een foutmelding, een logregel of een stack trace. Ontsleutelen dat mislukt geeft geen oorzaak terug, want een verkeerde sleutel en een aangepaste rij horen er van buiten hetzelfde uit te zien. |
+| Waar de server staat | Nieuwe map `server/` in de root, buiten `web/`. Alles in `web/` wordt gebouwd tot bestanden die de browser downloadt, dus client secrets, de tokensleutel en de service role key kunnen daar niet staan. |
+| Het contract | Een connector geeft altijd een `SyncResult` terug en gooit nooit. Een bron die eruit ligt is normaal, dus mislukken is onderdeel van het antwoord. `runConnector()` vangt af wat er ondanks het contract toch omhoog komt. |
+| Registry | Nu leeg. `register()`, `getConnector()` en `listConnectors()` staan klaar, er is nog niets om in te vullen. |
+| Geen afhankelijkheden | `server/` heeft geen `node_modules`. Node draait de TypeScript zelf en `node --test` draait de negentien tests. Dat scheelt een tweede lock file om bij te houden. |
+| CI | `.github/workflows/ci.yml` bij elke PR naar `main` en bij elke push naar `main`: node uit `.nvmrc` (24), `npm ci`, `npm run build`, `npm run smoke`, alleen in `web/`. De tests van `server/` draaien daar bewust nog niet in. |
+| Nepsleutels in CI | De rendertest heeft `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` nodig, anders maakt de client niets aan en crasht hij. Er gaat niets over het netwerk, want de test zet zelf een nep-PostgREST neer. De waarden zijn dus nep en staan gewoon in het workflowbestand. |
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -415,9 +446,26 @@ site van iemand anders. De Redirect URLs in Supabase zijn van buitenaf niet te l
 9. Blijft de standaard mailafzender van Supabase goed genoeg? Die is beperkt tot een paar
    berichten per uur. Zodra er echte gebruikers zijn is een eigen SMTP nodig.
 10. Wanneer gaat `demo.js` weg? Dat kan zodra de eerste echte koppeling de tabellen vult.
+    Sinds prompt 19 kan dat ook per rij: alles wat `store.js` klaarzet heeft `is_demo = true`,
+    dus `delete from ... where user_id = ... and is_demo` ruimt de demo op zonder de echte
+    rijen te raken. De vraag blijft open tot die eerste koppeling er is.
 11. Wat is het adres van de site op Vercel? Zonder dat adres is niet te controleren of de
     gepubliceerde build de omgevingsvariabelen bevat, en kan het ook niet bij de Redirect URLs
     in Supabase gezet worden.
+12. Waar gaat `server/` draaien? Railway was de gedachte, maar er is nog niets besloten en er
+    is nog niets om te draaien.
+13. Wie vraagt de developer key voor Canvas aan? Dat kan alleen de beheerder van de instantie,
+    dus daar is een school voor nodig die meewerkt. Zonder die sleutel komt de connector voor
+    Canvas niet verder dan het contract.
+14. Waar komt `BUNDEL_TOKEN_KEY` te staan zodra er echt gekoppeld wordt? Bij de hosting van de
+    server, nooit in git en nooit in `web/`. Raakt die sleutel kwijt, dan moet iedereen opnieuw
+    koppelen.
+15. Moeten de tests van `server/` mee in CI? Nu draait daar alleen `web/`, zoals afgesproken.
+    Zodra er meer in `server/` staat dan het contract hoort er een stap bij.
+16. Krijgt Magister een koppeling? De tabel `connections` laat nu alleen `canvas` en
+    `microsoft` toe. Er is geen open aanmeldweg voor Magister bekend.
+17. De twee nieuwe migraties zijn nog niet toegepast op het echte project. Dat gebeurt pas als
+    ze nagekeken zijn, want `revoke` op een kolom is niet iets om blind uit te voeren.
 
 ## 6. Changelog
 
@@ -536,3 +584,19 @@ site van iemand anders. De Redirect URLs in Supabase zijn van buitenaf niet te l
   uitgezocht: `VITE_`-variabelen horen op Config, want ze komen sowieso in de browser terecht.
   Daarna live geverifieerd dat aanmelden, de trigger, het vullen, opnieuw inloggen en het
   bewaren werken, en dat Confirm email uit staat. Testgebruiker weer verwijderd.
+- **prompt 19**: de back-end op gang gebracht, zonder iets aan de voorkant te raken. Regel 4
+  rechtgezet: Jayden op `Front-end`, Benjamin op `Back-end`. Twee migraties erbij:
+  `20260908100000_demo_flag.sql` zet `is_demo` op de dertien tabellen die `store.js` vult en
+  markeert bestaande rijen als demo, en `20260908101500_connections.sql` maakt de tabel
+  `connections` met RLS, vier policies, een unieke index op (user_id, source) en tokens die
+  alleen versleuteld worden opgeslagen. De browser komt niet bij de twee tokenkolommen: dat is
+  geregeld met de rechten op de kolom, met eerst een `revoke all` en daarna per kolom
+  teruggeven, want anders dekt het recht op de tabel nog steeds alles. In `store.js` is alleen de
+  `rows()`-helper in `seed()` veranderd: elke gevulde rij krijgt `is_demo: true`. Wat de
+  schermen te zien krijgen blijft gelijk. Nieuwe map `server/` met het contract voor een
+  connector (`types.ts`), de registry en `runConnector()` (`index.ts`), de tokenhulp
+  (`crypto/tokens.ts`) en negentien tests die op node zelf draaien, zonder afhankelijkheden.
+  Nog geen OAuth-flow en geen enkele echte API-call. Verder `.nvmrc` (node 24) en
+  `.github/workflows/ci.yml`, die bij elke PR naar `main` `npm ci`, `npm run build` en
+  `npm run smoke` draait in `web/`. Daarbij bleek dat de rendertest omvalt zonder
+  `VITE_`-sleutels, dus die staan als nepwaarden bij de smoke-stap.

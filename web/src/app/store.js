@@ -292,7 +292,9 @@ async function seed(user, profile) {
   const name = profile.name || STUDENT.name
   const initials = profile.initials || initialsOf(name)
 
-  const rows = (table, data) => ({ table, data: data.map((row) => ({ ...row, user_id: id })) })
+  /* `is_demo` staat op elke gevulde rij, zodat de demo er later in een query
+     uit kan zodra een echte koppeling dezelfde tabellen vult. */
+  const rows = (table, data) => ({ table, data: data.map((row) => ({ ...row, user_id: id, is_demo: true })) })
 
   const batches = [
     rows(
