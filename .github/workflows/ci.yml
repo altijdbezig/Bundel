@@ -1,7 +1,8 @@
 name: CI
 
 # Draait op elke pull request naar main en op elke push naar main.
-# Meer dan bouwen en de rendertest doet deze workflow niet.
+# Twee dingen: web/ bouwen met de rendertest erachteraan, en de tests van
+# server/. Meer niet.
 
 on:
   pull_request:
@@ -10,7 +11,7 @@ on:
     branches: [main]
 
 jobs:
-  web:
+  checks:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -35,3 +36,10 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://smoke.invalid
           VITE_SUPABASE_ANON_KEY: smoke-not-a-real-key
+
+      # De tests van server/ draaien op node zelf, dus daar valt niets te
+      # installeren. De stap start vanaf de hoofdmap, want de rest van deze
+      # job staat standaard in web/.
+      - name: server tests
+        working-directory: .
+        run: cd server && npm test

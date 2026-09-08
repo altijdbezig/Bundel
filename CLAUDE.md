@@ -64,10 +64,12 @@ Bundel/
 │  └─ Prototype/Bundel.dc.html                app-prototype, desktop + mobiel
 ├─ supabase/migrations/                       het databaseschema, zes migraties (prompt 16, 19)
 ├─ server/                                    de kant die met de bronnen praat (prompt 19)
-│  ├─ README.md                               waarom dit niet in web/ staat, en het contract
+│  ├─ README.md                               waarom dit niet in web/ staat, het contract, de scopes
 │  ├─ package.json · tsconfig.json · .env.example
 │  └─ src/
 │     ├─ connectors/  types.ts (contract) · index.ts (registry) · index.test.ts
+│     │  └─ microsoft/  auth.ts (OAuth2 met PKCE) · client.ts (Graph) ·
+│     │                 index.ts (de connector) · drie testbestanden (prompt 20)
 │     └─ crypto/      tokens.ts (versleutelen) · tokens.test.ts
 └─ web/                                       de website (prompt 1)
    ├─ README.md                               draaien, structuur, wat nog niet werkt
@@ -403,6 +405,29 @@ alleen aan de kant die schrijft. Wat de schermen te zien krijgen is regel voor r
 | CI | `.github/workflows/ci.yml` bij elke PR naar `main` en bij elke push naar `main`: node uit `.nvmrc` (24), `npm ci`, `npm run build`, `npm run smoke`, alleen in `web/`. De tests van `server/` draaien daar bewust nog niet in. |
 | Nepsleutels in CI | De rendertest heeft `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` nodig, anders maakt de client niets aan en crasht hij. Er gaat niets over het netwerk, want de test zet zelf een nep-PostgREST neer. De waarden zijn dus nep en staan gewoon in het workflowbestand. |
 
+**Prompt 20: de eerste echte connector (geen vragenronde, opdracht lag vast)**
+
+Weer niets aan de voorkant. Alleen `web/README.md` is aangeraakt, en dat is documentatie.
+
+| Onderwerp | Keuze |
+|---|---|
+| `origin/Back-end` | Bevat niets dat niet al in `main` zit, dus die branch mag vervangen worden. Nog niet gepusht, dat gebeurt pas na akkoord. |
+| `select *` op `connections` | Verboden, en dat staat nu als afspraak in sectie 4. De rechten op kolomniveau maken er anders `permission denied for table connections` van, en die melding wijst je de verkeerde kant op. |
+| CI | De tests van `server/` draaien mee als eigen stap. De job heet nu `checks` in plaats van `web`, want hij doet allebei. |
+| Node op Vercel | Niet te controleren van hieruit, en de root `.nvmrc` telt daar niet mee: Root Directory staat op `web` en Vercel kijkt alleen in die map. Wat er verwacht wordt staat nu in `web/README.md`. `.nvmrc` is niet aangeraakt. |
+| Flow | Authorization code met PKCE. Ook met een client secret erbij, want een onderschepte code is dan nog steeds niets waard. |
+| Tenant | Een vaste tenant uit `MICROSOFT_TENANT_ID`, niet `common`. Met `common` kan iedereen met een Microsoft-account inloggen, ook wie niets met de school te maken heeft. |
+| Scopes | `openid`, `profile`, `offline_access`, `User.Read`, `Team.ReadBasic.All`, `Channel.ReadBasic.All`, `ChannelMessage.Read.All`. Allemaal alleen lezen, uitleg per stuk in `server/README.md`. |
+| Bewust niet gevraagd | `Chat.Read`, want de app belooft op het scherm Bronnen "geen chats van anderen". `Calendars.Read` ook niet, want het rooster komt uit Magister. En niets met `ReadWrite`. |
+| Verversen | Vijf minuten voor het verlopen automatisch, en nog een keer als Graph alsnog 401 zegt. Stuurt Microsoft geen nieuw refresh token mee, dan blijft het oude staan. |
+| 429 | Wachten volgens `Retry-After`, dat zowel een aantal seconden als een datum kan zijn. Nooit langer dan een minuut, en hoogstens drie pogingen. |
+| Ingetrokken toestemming | Status `revoked` en klaar. De client probeert daarna niets meer, want opnieuw proberen levert toch niets op. |
+| `SyncFailure.status` | Nieuw veld, zodat een connector zelf kan zeggen dat het `revoked` moet worden. Zonder dat veld maakte `statusAfter()` er `expired` van, en dat is iets anders. |
+| `TokenStore` | Staat in `types.ts` en zit in `SyncContext`. De connector geeft alleen door wat er is veranderd, versleuteld. Wie het naar `connections` schrijft bestaat nog niet. |
+| Wat `sync()` nu doet | Alleen `/me` aanroepen om te zien of de koppeling nog werkt, en een leeg resultaat teruggeven. Nog geen kanaal en geen bericht opgehaald, dat was ook de opdracht. |
+| Tests | Zestig stuks, allemaal met een nep-`fetch` en een `sleep` die niet wacht. Er gaat geen enkel verzoek het netwerk op. |
+| Type-controle | Eenmalig met `tsc` gedraaid tegen `server/src`, streng en met `erasableSyntaxOnly`. Schoon. `typescript` staat niet in de repo, want `server/` blijft zonder afhankelijkheden. |
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -423,6 +448,13 @@ alleen aan de kant die schrijft. Wat de schermen te zien krijgen is regel voor r
 - Sleutels staan nooit in de code. Lokaal in `web/.env.local` (staat in `.gitignore`), op
   Vercel bij Environment Variables. `web/.env.example` zegt welke er nodig zijn.
 - Schemawijzigingen gaan als migratie, en het bestand komt in `supabase/migrations/`.
+- **Op `connections` nooit `select *`.** Noem daar altijd de kolommen die je nodig hebt. De
+  twee tokenkolommen zijn met rechten op kolomniveau afgeschermd, en een `select *` vraagt ze
+  dus mee. Postgres geeft dan `permission denied for table connections` in plaats van lege
+  kolommen, en die melding wijst je de verkeerde kant op. Leesbaar voor `authenticated` zijn:
+  `id`, `user_id`, `source`, `external_account_id`, `status`, `scopes`, `connected_at`,
+  `last_synced_at`, `last_error` en `token_expires_at`. Niet leesbaar, voor niemand behalve de
+  server: `access_token_encrypted` en `refresh_token_encrypted`.
 - Controle voor je klaar bent: `grep -rnP "\x{2014}" .` moet leeg zijn buiten `node_modules`,
   `dist` en `support.js` (dat is gegenereerde Claude Design runtime, gemarkeerd als do not edit).
 
@@ -466,6 +498,20 @@ alleen aan de kant die schrijft. Wat de schermen te zien krijgen is regel voor r
     `microsoft` toe. Er is geen open aanmeldweg voor Magister bekend.
 17. De twee nieuwe migraties zijn nog niet toegepast op het echte project. Dat gebeurt pas als
     ze nagekeken zijn, want `revoke` op een kolom is niet iets om blind uit te voeren.
+18. Er moet een app-registratie komen in de Microsoft-tenant van een school, en **een beheerder
+    van die tenant moet hem goedkeuren**. Zonder die goedkeuring werkt de flow niet: het
+    inloggen loopt vast op `AADSTS65001` en Graph geeft 403. Dat komt door de drie scopes met
+    `.All` erachter, die nodig zijn om teams, kanalen en berichten te lezen. Zolang die
+    goedkeuring er niet is valt de connector alleen met nep-antwoorden te testen.
+19. Welke tenant wordt dat? Nu staat er een vaste tenant uit `MICROSOFT_TENANT_ID`. Met
+    `common` kan iedereen met een Microsoft-account inloggen, en dat willen we niet.
+20. Het client secret van Entra verloopt. Wie houdt de vervaldatum bij? Daarna stopt de
+    koppeling zonder waarschuwing.
+21. Waar worden `state` en de `code_verifier` bewaard tussen het wegsturen en het terugkomen?
+    Dat hangt aan het endpoint voor de redirect, en dat bestaat nog niet.
+22. Welke Node-versie staat er in het Vercel-project? De root `.nvmrc` telt daar niet mee, want
+    Root Directory staat op `web`. Nakijken onder Project Settings, Build & Development
+    Settings, Node.js Version. Zie ook `web/README.md`.
 
 ## 6. Changelog
 
@@ -600,3 +646,18 @@ alleen aan de kant die schrijft. Wat de schermen te zien krijgen is regel voor r
   `.github/workflows/ci.yml`, die bij elke PR naar `main` `npm ci`, `npm run build` en
   `npm run smoke` draait in `web/`. Daarbij bleek dat de rendertest omvalt zonder
   `VITE_`-sleutels, dus die staan als nepwaarden bij de smoke-stap.
+- **prompt 20**: de OAuth-kant van de eerste echte connector, opnieuw zonder de voorkant aan te
+  raken. Uitgezocht dat `origin/Back-end` niets bevat dat niet al in `main` zit, dus die mag
+  vervangen worden; nog niet gepusht. Nieuwe vaste afspraak in sectie 4: op `connections` altijd
+  de kolommen benoemen, nooit `select *`, met de lijst van wat `authenticated` mag lezen. CI
+  draait nu ook `cd server && npm test`, en de job heet `checks`. De Node-versie van Vercel is
+  van hieruit niet te zien en de root `.nvmrc` telt daar niet mee, dus dat staat nu uitgelegd in
+  `web/README.md`; `.nvmrc` zelf is niet aangeraakt. Nieuw: `server/src/connectors/microsoft/`
+  met `auth.ts` (authorization code met PKCE, de URL bouwen, de code inwisselen, verversen),
+  `client.ts` (Graph met automatisch verversen, 401 een keer opnieuw, `Retry-After` bij 429, en
+  stoppen bij een ingetrokken toestemming) en `index.ts` (de connector, die zich bij de registry
+  meldt). `types.ts` kreeg er `TokenStore`, `TokenUpdate` en een `status` op `SyncFailure` bij,
+  zodat een connector zelf `revoked` kan zeggen in plaats van `expired`. Zestig tests, allemaal
+  met een nep-`fetch` en zonder ooit het netwerk aan te raken. De gekozen scopes en wat er
+  bewust niet gevraagd wordt staan met uitleg in `server/README.md`, en `server/.env.example`
+  legt per variabele uit waar hij vandaan komt.

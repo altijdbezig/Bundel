@@ -33,8 +33,13 @@ server/
 └─ src/
    ├─ connectors/
    │  ├─ types.ts        het contract: wat een connector is en teruggeeft
-   │  ├─ index.ts        de registry en `runConnector()`, nu nog zonder connectors
-   │  └─ index.test.ts
+   │  ├─ index.ts        de registry en `runConnector()`
+   │  ├─ index.test.ts
+   │  └─ microsoft/      de bron die in de app Teams heet
+   │     ├─ auth.ts      OAuth2 met PKCE tegen Entra: inloggen, inwisselen, verversen
+   │     ├─ client.ts    Graph met automatisch verversen, 429 en Retry-After
+   │     ├─ index.ts     de connector zelf, meldt zich aan bij de registry
+   │     └─ auth.test.ts · client.test.ts · connector.test.ts
    └─ crypto/
       ├─ tokens.ts       versleutelen en ontsleutelen met een sleutel uit de omgeving
       └─ tokens.test.ts
@@ -56,9 +61,9 @@ Roep een connector alleen aan via `runConnector()`. Die vangt af wat er ondanks
 het contract toch omhoog komt, en maakt er een mislukt resultaat van. Zo kan
 een kapotte connector nooit een hele sync-ronde meeslepen.
 
-De registry is nu leeg. `register()` zet er straks een connector in, `microsoft`
-voor de bron Teams en `canvas` voor Canvas. Magister staat er niet bij: daar is
-geen open aanmeldweg voor.
+`microsoft` staat in de registry, `canvas` nog niet. Magister komt er niet bij:
+daar is geen open aanmeldweg voor. Het importeren van `connectors/microsoft`
+registreert de connector, daarna pak je hem op met `getConnector('microsoft')`.
 
 ## Tokens
 
@@ -97,13 +102,83 @@ cd server
 npm test
 ```
 
-De CI in `.github/workflows/ci.yml` draait deze tests nog niet. Die bouwt
-alleen `web/`. Zet dat erbij zodra hier meer staat dan het contract.
+De CI in `.github/workflows/ci.yml` draait deze tests mee, als eigen stap na
+het bouwen van `web/`.
+
+De tests raken het netwerk niet aan. Overal waar er iets naar buiten zou gaan
+staat een nep-`fetch`, en het wachten bij 429 gebeurt met een `sleep` die niets
+doet maar wel onthoudt hoelang er gewacht zou zijn.
+
+## Microsoft
+
+De eerste echte connector. Wat er staat is het inloggen en het tokenbeheer.
+Data ophalen komt daarna: `sync()` controleert nu alleen of de koppeling nog
+werkt (een aanroep van `/me`) en geeft een leeg resultaat terug.
+
+### De flow
+
+1. `createPkcePair()` en `createState()`. Bewaar allebei bij de sessie van de
+   gebruiker. De `code_verifier` mag nergens anders heen.
+2. `buildAuthorizationUrl()` en de gebruiker daarheen sturen.
+3. Microsoft stuurt hem terug op de redirect met een `code`. Controleer eerst de
+   `state`, dan pas verder.
+4. `exchangeCode()` met de code en de bewaarde `code_verifier`.
+5. De tokens versleutelen en in `connections` zetten. Nooit in platte tekst.
+
+PKCE zit erop omdat een onderschepte code dan niets waard is zonder de
+`code_verifier`. Het hoort bij een publieke client, maar het kost niets om het
+er ook met een client secret bij te doen.
+
+### De rechten die we vragen
+
+Zo min mogelijk, en allemaal alleen lezen. Er zit geen enkele `ReadWrite` bij,
+dus Bundel kan niets veranderen aan het account van de gebruiker.
+
+| Scope | Waarvoor |
+|---|---|
+| `openid`, `profile` | Weten wie er inlogt, zodat de koppeling aan de juiste gebruiker hangt. |
+| `offline_access` | Het refresh token. Zonder deze scope moet iemand elk uur opnieuw inloggen. |
+| `User.Read` | Het eigen profiel, alleen om het account te herkennen. Niet dat van anderen. |
+| `Team.ReadBasic.All` | De teams waar de gebruiker zelf lid van is. |
+| `Channel.ReadBasic.All` | De kanalen binnen die teams. |
+| `ChannelMessage.Read.All` | De berichten in die kanalen. Dit is wat de app als groepsberichten laat zien. |
+
+Wat we met opzet **niet** vragen:
+
+- `Chat.Read`. Dat zijn de persoonlijke chats van de gebruiker. De app belooft
+  op het scherm Bronnen letterlijk "geen chats van anderen", dus die scope hoort
+  er niet bij.
+- `Calendars.Read`. Het rooster komt uit Magister, niet uit Teams.
+- Alles met `ReadWrite`. Bundel schrijft niets terug naar een bron.
+
+De drie scopes met `.All` erachter gelden alleen voor teams en kanalen waar de
+gebruiker zelf in zit, maar ze hebben wel goedkeuring van een beheerder nodig.
+Zonder die goedkeuring loopt het inloggen vast met `AADSTS65001` en geeft Graph
+403 terug. Dat is precies wat de app op het scherm Bronnen al zegt: de
+schoolbeheerder moet de app eerst goedkeuren.
+
+### Hoe het misgaat, en wat er dan gebeurt
+
+| Wat | Antwoord | Daarna |
+|---|---|---|
+| Token bijna verlopen | wordt vanzelf ververst, vijf minuten van tevoren | gewoon door |
+| Graph zegt 401 | een keer verversen en opnieuw proberen | blijft het 401, dan `revoked` |
+| Toestemming ingetrokken (`invalid_grant`) | `auth`, niet opnieuw proberen | status `revoked`, de gebruiker moet zelf opnieuw koppelen |
+| Graph zegt 403 | `auth`, niet opnieuw proberen | de beheerder moet goedkeuren |
+| Graph zegt 429 | wachten volgens `Retry-After` en opnieuw, tot drie keer | daarna `rate_limited`, later nog eens |
+| Graph zegt 5xx of het netwerk valt weg | opnieuw proberen | daarna `unavailable`, later nog eens |
+
+Bij `revoked` stopt de client meteen. Elke volgende aanroep komt niet eens meer
+bij Microsoft aan, want opnieuw proberen levert toch niets op.
 
 ## Wat hier nog moet komen
 
-- De OAuth-flow per bron: aanmelden, terugkomen op de redirect, tokens opslaan.
-- Vernieuwen van een token voordat het verloopt.
-- De connectors zelf, en het schrijven naar de tabellen die de app leest.
+- De kant die met Supabase praat, zodat `TokenStore` echt naar `connections`
+  schrijft. Nu geeft de connector alleen door wat er is veranderd.
+- Het endpoint voor de redirect, en het bewaren van `state` en `code_verifier`
+  bij de sessie.
+- De connector voor Canvas.
+- Data ophalen: kanalen, berichten en de rest, en die naar de tabellen schrijven
+  die de app leest.
 - Een plek om dit te draaien. Railway was de gedachte, maar er is nog niets
   besloten.

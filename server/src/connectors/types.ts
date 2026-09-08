@@ -60,6 +60,8 @@ export interface SyncContext {
   readonly signal?: AbortSignal
   /** De klok, zodat een test hem kan vastzetten. */
   readonly now?: () => Date
+  /** Waar vernieuwde tokens heen gaan. Zonder store blijft alles in het geheugen. */
+  readonly store?: TokenStore
 }
 
 export interface SyncFailure {
@@ -68,6 +70,31 @@ export interface SyncFailure {
   readonly message: string
   /** Of het zin heeft om het later nog eens te proberen. */
   readonly retryable: boolean
+  /**
+   * Welke status de koppeling hierna hoort te krijgen, als de connector dat
+   * zeker weet. Een ingetrokken toestemming zet hier `revoked`, want dan is
+   * opnieuw proberen zinloos. Staat er niets, dan beslist `statusAfter()`.
+   */
+  readonly status?: ConnectionStatus
+}
+
+/** Wat er naar de tokenkolommen van `connections` gaat. Alles versleuteld. */
+export interface TokenUpdate {
+  readonly accessTokenEncrypted: string
+  readonly refreshTokenEncrypted: string | null
+  readonly tokenExpiresAt: Date
+  readonly scopes: readonly string[]
+  readonly status: ConnectionStatus
+}
+
+/**
+ * De brug naar de database. Een connector weet niet hoe die eruitziet, hij
+ * geeft alleen door wat er is veranderd. De rij zelf schrijft de kant die met
+ * Supabase praat, en die bestaat nog niet.
+ */
+export interface TokenStore {
+  save(update: TokenUpdate): Promise<void>
+  setStatus(status: ConnectionStatus, lastError: string | null): Promise<void>
 }
 
 interface SyncRun {
@@ -92,6 +119,7 @@ export interface Connector {
 /** Welke status een koppeling krijgt na deze afloop. */
 export function statusAfter(result: SyncResult): ConnectionStatus {
   if (result.ok) return 'active'
+  if (result.error.status) return result.error.status
   if (result.error.code === 'auth') return 'expired'
   return 'error'
 }

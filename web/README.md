@@ -6,6 +6,10 @@ Supabase.
 
 ## Draaien
 
+Node 24. Die versie staat in `.nvmrc` in de hoofdmap van de repo en die gebruikt de CI ook.
+Met nvm: `nvm use` in de hoofdmap. Zie hieronder bij Hosten wat Vercel ermee doet, want dat
+is niet vanzelf hetzelfde.
+
 ```bash
 cd web
 npm install
@@ -101,7 +105,16 @@ het bouwt zelf bij elke push.
 2. Zet **Root Directory** op `web`. Zonder dit vindt Vercel de package.json niet.
 3. Framework staat op Vite, build command `npm run build`, output `dist`. Dat staat al in
    `vercel.json`, dus je hoeft niets in te vullen.
-4. Deploy. Je krijgt een adres op `*.vercel.app` tot er een eigen domein is.
+4. Zet **Node.js Version** op 24.x, onder Project Settings, Build & Development Settings.
+5. Deploy. Je krijgt een adres op `*.vercel.app` tot er een eigen domein is.
+
+**Let op de Node-versie.** De repo verwacht node 24: dat staat in `.nvmrc` in de hoofdmap en
+de CI leest het daar. Vercel leest dat bestand niet, want Root Directory staat op `web` en
+Vercel kijkt alleen in die map. In `web/` staat met opzet geen tweede `.nvmrc` en ook geen
+`engines` in `package.json`, dus Vercel gebruikt nu de versie die in het dashboard staat.
+Wat dat is, is van buitenaf niet te zien. Kijk het na onder Project Settings, Build &
+Development Settings, Node.js Version. Staat daar iets anders dan 24, zeg het dan even: dan
+zetten we het gelijk, in het dashboard of met een `engines`-regel in `web/package.json`.
 
 De rewrite in `vercel.json` zorgt dat `/download` en `/privacy` ook werken als iemand die
 URL direct opent of ververst. Zonder die regel krijg je daar een 404.
