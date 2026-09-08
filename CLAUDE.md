@@ -511,6 +511,17 @@ De volledige lijst met prioriteiten staat in het antwoord bij deze prompt. Wat b
 Bundel komt blijft staan: persoonlijke chats, bellen, terugschrijven naar een bron, en de
 schooleigen tools MijnLucas, StudyCoach en Portflow.
 
+**Prompt 22: vier keuzes na de vergelijking (4 vragen gesteld, 4 beantwoord)**
+
+| Onderwerp | Keuze |
+|---|---|
+| Teams Assignments | De school gebruikt het. Opdrachten komen dus uit twee bronnen, niet alleen uit Canvas. |
+| Gevolg daarvan | Het scherm Opdrachten moet dubbele items kunnen herkennen, want dezelfde opdracht kan in Canvas en in Teams staan. En er is een scope bij nodig (`EduAssignments.Read`), die net als de andere `.All`-scopes goedkeuring van een beheerder vraagt. Zet dat bij "Later nodig" in `server/README.md` zodra de back-end weer opengaat. |
+| Status bij een conflict | **De bron wint.** Ingediend, beoordeeld of te laat komt uit Canvas of Teams, en dat is wat je ziet. Daarnaast blijft een eigen vinkje bestaan als eigen notitie, op dezelfde manier waarop eigen roosteritems naast de lessen staan. Bundel liegt dus nooit over de bron, maar je kunt wel je eigen ding bijhouden voor wat de bron niet kent. |
+| Back-end | **Bevroren.** Niets meer in `server/` tot Jayde erom vraagt. De OAuth-flow blijft staan zoals hij nu is. |
+| Magister | Eerst de school vragen of er een officiele weg is, via de leverancier of de beheerder. Geen onofficiele API, want die botst waarschijnlijk met de voorwaarden en valt om zodra Magister hem dichtzet. |
+| Gevolg daarvan | Rooster, cijfers, afwezigheid en lesuren blijven op demodata tot dat antwoord er is. Lesuren en periodes worden wel alvast in het model en de schermen gebouwd, zodat er straks alleen een andere invoer nodig is. |
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -608,6 +619,11 @@ schooleigen tools MijnLucas, StudyCoach en Portflow.
     eerste vraag die beantwoord moet worden zodra iemand aan die knop begint.
 26. Wie ruimt koppelingen op die `revoked` zijn? De rij blijft nu gewoon staan en de gebruiker
     ziet er niets van. Opruimen of een melding: nog niet besloten.
+27. Wie vraagt de school of er een officiele weg naar Magister is? Dat antwoord bepaalt of
+    rooster, cijfers, afwezigheid en lesuren ooit echt worden of demodata blijven.
+28. Hoe herkennen we dezelfde opdracht in Canvas en in Teams? Op titel plus deadline is
+    onbetrouwbaar. Zonder een antwoord staat een opdracht straks twee keer in de lijst.
+29. Wanneer gaat de back-end weer open? Sinds prompt 22 ligt `server/` stil op verzoek.
 
 ## 6. Changelog
 
@@ -780,3 +796,8 @@ schooleigen tools MijnLucas, StudyCoach en Portflow.
   een ontbrekend scherm maar een verkeerd eigenaarschap: Bundel houdt zelf bij of iets af is,
   terwijl Canvas dat weet. En omdat Bundel niets terugschrijft moet elk item doorlinken naar de
   bron, en dat kan nu nergens.
+- **prompt 22**: vier keuzes vastgelegd, geen code. De school gebruikt Teams Assignments, dus
+  opdrachten komen uit twee bronnen en moeten ontdubbeld worden. Bij een conflict wint de
+  bronstatus, met een eigen vinkje ernaast als eigen notitie. Magister gaat pas verder als de
+  school zegt of er een officiele weg is, dus geen onofficiele API. En `server/` ligt stil tot
+  Jayde erom vraagt.
