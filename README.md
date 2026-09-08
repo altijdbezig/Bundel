@@ -130,8 +130,7 @@ is een cache met een vervaldatum. En we schrijven zelf geen crypto.
 ## Wie dit maakt
 
 Twee studenten, in hun vrije tijd, onder de naam **AltijdBezig**. Geen bedrijf, geen
-verdienmodel, geen investeerders. Wel een repo vol commits en een `CLAUDE.md` van
-een paar duizend woorden.
+verdienmodel, geen investeerders.
 
 ---
 
