@@ -487,6 +487,30 @@ service role key gaat langs RLS heen en de tokensleutel opent elke opgeslagen ko
 Vercel horen alleen `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` te staan, en dat zijn
 precies de twee die niet geheim zijn.
 
+**Prompt 21: vergeleken met de echte bronnen (analyse, geen code)**
+
+Drie screenshots bekeken van hoe SintLucas de bronnen echt gebruikt: Magister (Vandaag),
+Teams (de rail met MijnLucas) en Canvas (Dashboard). Wat daaruit blijkt en wat Bundel mist:
+
+| Wat we zagen | Gevolg voor Bundel |
+|---|---|
+| Magister nummert lesuren (3-4, 5-8, 10-15) | Het rooster toont alleen kloktijden. Studenten praten in lesuren, dus die horen erbij. |
+| Magister toont morgen onder vandaag | Vandaag is na de laatste les leeg en daarmee nutteloos. Morgen erbij. |
+| Magister rekent per periode | Bundel middelt over alles. Een Nederlandse school werkt met P1 tot P4, en dat is een ander getal. |
+| Canvas kent status: ingediend, beoordeeld, te laat | Bundel heeft alleen een eigen vinkje. De site belooft "de status die er echt is", dus dit is een gat tussen belofte en app. |
+| Canvas heeft Inbox en aankondigingen | Berichten van docenten komen nu nergens binnen. |
+| Teams heeft Assignments als eigen app | Opdrachten kunnen dus uit twee bronnen komen, niet alleen Canvas. Uitzoeken of de school die gebruikt. |
+| Teams heeft een agenda met afspraken | Een projectafspraak staat niet in Magister en zou in Bundel ontbreken. |
+| Alle drie: je handelt in de bron | Bundel schrijft niets terug, dus elk item moet doorlinken naar waar je wel kunt handelen. Dat ontbreekt volledig. |
+
+De belangrijkste conclusie: Bundel bezit nu toestand die de bronnen bezitten. Een afgevinkte
+opdracht is een lokaal vinkje, terwijl Canvas de echte status heeft. Dat moet omdraaien: lezen
+wat er is, en waar je niet kunt handelen doorverwijzen naar de bron.
+
+De volledige lijst met prioriteiten staat in het antwoord bij deze prompt. Wat bewust niet in
+Bundel komt blijft staan: persoonlijke chats, bellen, terugschrijven naar een bron, en de
+schooleigen tools MijnLucas, StudyCoach en Portflow.
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -748,4 +772,11 @@ precies de twee die niet geheim zijn.
   ontsleutelt ze en roept Graph aan, wat meteen bewijst dat verversen werkt. 49 tests erbij,
   109 in totaal, allemaal met een nep-`fetch` en een nep-database. Eén testfout onderweg: de
   test die controleert dat iemand anders geen koppeling kan kapen stuurde zelf geen sessie mee,
-  waardoor hij de verkeerde foutcode verwachtte.
+  waardoor hij de verkeerde foutcode verwachtte. Daarna alles naar `main` gemerged en gepusht,
+  en `Front-end` bijgetrokken zodat de drie branches gelijk staan.
+- **prompt 21**: geen code, wel een vergelijking. Magister, Teams en Canvas naast Bundel gelegd
+  aan de hand van drie screenshots. Uitkomst: negen dingen die noodzakelijk zijn, zeven die er
+  kort daarna bij horen, en een lijst die bewust buiten Bundel blijft. Het grootste gat is niet
+  een ontbrekend scherm maar een verkeerd eigenaarschap: Bundel houdt zelf bij of iets af is,
+  terwijl Canvas dat weet. En omdat Bundel niets terugschrijft moet elk item doorlinken naar de
+  bron, en dat kan nu nergens.
