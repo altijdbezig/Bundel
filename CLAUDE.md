@@ -62,11 +62,18 @@ Bundel/
 ├─ Claude Design/
 │  ├─ Branding/Bundel Branding Kit.dc.html    merkrichtlijnen, 8 tabs
 │  └─ Prototype/Bundel.dc.html                app-prototype, desktop + mobiel
-├─ supabase/migrations/                       het databaseschema, zes migraties (prompt 16, 19)
-├─ server/                                    de kant die met de bronnen praat (prompt 19)
-│  ├─ README.md                               waarom dit niet in web/ staat, het contract, de scopes
+├─ supabase/migrations/                       het databaseschema, zeven migraties (prompt 16, 19, 20)
+├─ server/                                    de kant die met de bronnen praat (prompt 19, 20)
+│  ├─ README.md                               waarom dit niet in web/ staat, de flow, de scopes,
+│  │                                          en de stappenlijst om het zelf te doorlopen
 │  ├─ package.json · tsconfig.json · .env.example
+│  ├─ scripts/verify-connection.ts            bewijst dat een opgeslagen koppeling leeft
 │  └─ src/
+│     ├─ index.ts     start de server
+│     ├─ http/        router.ts (de drie endpoints) · server.ts (node:http) ·
+│     │               user.ts (welke gebruiker) · router.test.ts
+│     ├─ store/       client.ts · connections.ts · oauth-state.ts · twee testbestanden
+│     │               de enige kant die de service role key gebruikt
 │     ├─ connectors/  types.ts (contract) · index.ts (registry) · index.test.ts
 │     │  └─ microsoft/  auth.ts (OAuth2 met PKCE) · client.ts (Graph) ·
 │     │                 index.ts (de connector) · drie testbestanden (prompt 20)
@@ -428,6 +435,58 @@ Weer niets aan de voorkant. Alleen `web/README.md` is aangeraakt, en dat is docu
 | Tests | Zestig stuks, allemaal met een nep-`fetch` en een `sleep` die niet wacht. Er gaat geen enkel verzoek het netwerk op. |
 | Type-controle | Eenmalig met `tsc` gedraaid tegen `server/src`, streng en met `erasableSyntaxOnly`. Schoon. `typescript` staat niet in de repo, want `server/` blijft zonder afhankelijkheden. |
 
+**Prompt 20: de OAuth-flow werkend (geen vragenronde, opdracht lag vast)**
+
+Weer niets aan de voorkant. `git status` laat geen enkele wijziging zien in `web/src`,
+`web/index.html` of `web/src/styles`.
+
+| Onderwerp | Keuze |
+|---|---|
+| Scopes | Terug naar vier: `openid`, `profile`, `offline_access`, `User.Read`. Die hebben geen goedkeuring van een beheerder nodig, dus de flow is te bouwen en te testen zonder dat iemand iets aanzet. |
+| De drie die eruit zijn | `Team.ReadBasic.All`, `Channel.ReadBasic.All` en `ChannelMessage.Read.All` staan onder "Later nodig" in `server/README.md`, met de reden en wanneer ze terugkomen. |
+| Waar de lijst staat | `SCOPES` in `connectors/microsoft/auth.ts`, op een plek. De flow gebruikt hem als standaardwaarde, dus een aanroep kan er tijdelijk van afwijken. |
+| Supabase-client | Geen `@supabase/supabase-js`, maar PostgREST over `fetch`. `server/` heeft met opzet geen afhankelijkheden, want dan draait node de TypeScript zelf en hoeft de CI niets te installeren. |
+| Waar de service role key mag komen | Alleen in `server/src/store/`. Dat staat als opmerking bovenaan alle drie de bestanden daar. |
+| Tokens | Gaan door `crypto/tokens.ts` voordat ze de database in gaan en er weer doorheen bij het lezen. Buiten `store/connections.ts` bestaan alleen platte tokens in het geheugen. |
+| Opnieuw koppelen | Een upsert op `(user_id, source)`, dus de bestaande rij wordt bijgewerkt en er komt geen tweede bij. |
+| State en verifier | Een tabel `oauth_state` met een TTL van tien minuten. Geen cookie, want de `code_verifier` hoort de browser nooit te zien. Geen geheugen, want dat werkt niet zodra er meer dan een proces draait. |
+| State-regels | Minstens 32 bytes willekeur, eenmalig, en na het ophalen meteen weg, ook als de flow daarna alsnog mislukt. Onbekend of verlopen is een harde fout. |
+| Webserver | `node:http`, geen Fastify. Drie GET-endpoints zonder body, zonder middleware en zonder validatieschema: een framework levert daar niets voor terug en zou wel een installatiestap toevoegen. |
+| Testbaarheid | Alle logica staat in `http/router.ts`, en die kent geen node:http. Een test roept hem aan met een methode, een URL en headers. Er komt geen poort aan te pas. |
+| Wie er aanklopt | Het Supabase-token gaat naar `/auth/v1/user`, en `user_id` komt daaruit. Nooit uit de querystring. |
+| De gebruiker op de callback | De browser komt daar terug vanaf Microsoft en draagt geen Authorization-header mee. De gebruiker komt daarom uit de rij die bij `start` is weggeschreven onder een gecontroleerde sessie. Dat is precies waar `state` voor is. Staat er toch een geldige sessie op, dan moet die bij dezelfde gebruiker horen. |
+| Bij een fout | Een korte code in de URL terug naar de app, of een leesbare pagina als `APP_BASE_URL` leeg is. Nooit een stack trace, nooit een token, nooit een code. |
+
+**Nieuwe bestanden**
+
+```
+server/src/index.ts                    start de server
+server/src/http/router.ts              de drie endpoints, los van node:http
+server/src/http/server.ts              de adapter naar node:http
+server/src/http/user.ts                welke gebruiker hoort bij dit Supabase-token
+server/src/http/router.test.ts
+server/src/store/client.ts             PostgREST over fetch, service role key op een plek
+server/src/store/connections.ts        de tabel connections, en de echte TokenStore
+server/src/store/oauth-state.ts        state en code_verifier, met TTL
+server/src/store/connections.test.ts · oauth-state.test.ts
+server/scripts/verify-connection.ts    bewijst dat opslaan, ontsleutelen en verversen werken
+supabase/migrations/20260908143000_oauth_state.sql
+```
+
+**Wat Jayden zelf moet zetten, en waar**
+
+| Waar | Wat |
+|---|---|
+| `server/.env` (lokaal, staat in `.gitignore`) | `BUNDEL_TOKEN_KEY`, `PORT`, `APP_BASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, en de vier `MICROSOFT_*` |
+| Entra ID, app-registratie | Redirect URI letterlijk gelijk aan `MICROSOFT_REDIRECT_URI`, plus een client secret |
+| Supabase | De migratie `20260908143000_oauth_state.sql` een keer draaien |
+
+`SUPABASE_SERVICE_ROLE_KEY` en `BUNDEL_TOKEN_KEY` gaan **nooit** naar Vercel en **nooit** naar
+`web/`. Vercel bouwt `web/`, en alles wat daar staat komt in de gedownloade code terecht. De
+service role key gaat langs RLS heen en de tokensleutel opent elke opgeslagen koppeling. In
+Vercel horen alleen `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` te staan, en dat zijn
+precies de twee die niet geheim zijn.
+
 **Routes site:** `/` · `/login` · `/wachtwoord` · `/download` · `/privacy` · `/voorwaarden` · `/over` · 404-fallback.
 **Routes app:** `/app` · `/app/opdrachten` · `/app/rooster` · `/app/cijfers` · `/app/groepen` ·
 `/app/aanwezigheid` · `/app/bronnen` · `/app/instellingen`, alle achter `RequireAuth`.
@@ -492,26 +551,39 @@ Weer niets aan de voorkant. Alleen `web/README.md` is aangeraakt, en dat is docu
 14. Waar komt `BUNDEL_TOKEN_KEY` te staan zodra er echt gekoppeld wordt? Bij de hosting van de
     server, nooit in git en nooit in `web/`. Raakt die sleutel kwijt, dan moet iedereen opnieuw
     koppelen.
-15. Moeten de tests van `server/` mee in CI? Nu draait daar alleen `web/`, zoals afgesproken.
-    Zodra er meer in `server/` staat dan het contract hoort er een stap bij.
+15. **Beantwoord in prompt 19.** De tests van `server/` draaien mee in CI, als eigen stap na
+    het bouwen van `web/`. De tests uit prompt 20 draaien daar vanzelf in mee, want de stap is
+    `cd server && npm test` en die pakt alles onder `src/**/*.test.ts`.
 16. Krijgt Magister een koppeling? De tabel `connections` laat nu alleen `canvas` en
     `microsoft` toe. Er is geen open aanmeldweg voor Magister bekend.
 17. De twee nieuwe migraties zijn nog niet toegepast op het echte project. Dat gebeurt pas als
     ze nagekeken zijn, want `revoke` op een kolom is niet iets om blind uit te voeren.
-18. Er moet een app-registratie komen in de Microsoft-tenant van een school, en **een beheerder
-    van die tenant moet hem goedkeuren**. Zonder die goedkeuring werkt de flow niet: het
-    inloggen loopt vast op `AADSTS65001` en Graph geeft 403. Dat komt door de drie scopes met
-    `.All` erachter, die nodig zijn om teams, kanalen en berichten te lezen. Zolang die
-    goedkeuring er niet is valt de connector alleen met nep-antwoorden te testen.
+18. **Deels opgelost in prompt 20.** De drie scopes met `.All` erachter zijn eruit gehaald, dus
+    voor het inloggen is nu geen goedkeuring van een beheerder meer nodig. Er moet nog wel een
+    app-registratie komen, maar die kan iedereen met een schoolaccount zelf doorlopen. De
+    goedkeuring komt terug op het moment dat we echt teams, kanalen en berichten gaan lezen.
 19. Welke tenant wordt dat? Nu staat er een vaste tenant uit `MICROSOFT_TENANT_ID`. Met
     `common` kan iedereen met een Microsoft-account inloggen, en dat willen we niet.
 20. Het client secret van Entra verloopt. Wie houdt de vervaldatum bij? Daarna stopt de
     koppeling zonder waarschuwing.
-21. Waar worden `state` en de `code_verifier` bewaard tussen het wegsturen en het terugkomen?
-    Dat hangt aan het endpoint voor de redirect, en dat bestaat nog niet.
+21. **Beantwoord in prompt 20.** In de tabel `oauth_state`, tien minuten geldig, eenmalig te
+    gebruiken en na afloop meteen weg. Alleen de service role komt erbij.
 22. Welke Node-versie staat er in het Vercel-project? De root `.nvmrc` telt daar niet mee, want
     Root Directory staat op `web`. Nakijken onder Project Settings, Build & Development
     Settings, Node.js Version. Zie ook `web/README.md`.
+23. De migratie `20260908143000_oauth_state.sql` is nog niet gedraaid op het echte project.
+    Zonder die tabel geeft `/auth/microsoft/start` een `server_error`, want er valt niets vast
+    te leggen. Draaien via de Supabase CLI of door de inhoud in de SQL Editor te plakken.
+24. De app weet nog niets van deze server. Er is geen knop op `/app/bronnen` die
+    `/auth/microsoft/start` aanroept, en er wordt niets gedaan met `?connect=microsoft&status=ok`
+    als je terugkomt. Dat is front-end werk en hoort op `Front-end`.
+25. Hoe komt het access token van Supabase bij `/auth/microsoft/start`? Een gewone navigatie in
+    de browser stuurt geen Authorization-header mee. Handmatig testen kan met `curl` en daarna
+    de `Location` in de browser plakken, maar voor de knop in de app moet de voorkant het
+    endpoint met `fetch` aanroepen en daarna zelf doorverwijzen naar wat er terugkomt. Dat is de
+    eerste vraag die beantwoord moet worden zodra iemand aan die knop begint.
+26. Wie ruimt koppelingen op die `revoked` zijn? De rij blijft nu gewoon staan en de gebruiker
+    ziet er niets van. Opruimen of een melding: nog niet besloten.
 
 ## 6. Changelog
 
@@ -661,3 +733,19 @@ Weer niets aan de voorkant. Alleen `web/README.md` is aangeraakt, en dat is docu
   met een nep-`fetch` en zonder ooit het netwerk aan te raken. De gekozen scopes en wat er
   bewust niet gevraagd wordt staan met uitleg in `server/README.md`, en `server/.env.example`
   legt per variabele uit waar hij vandaan komt.
+- **prompt 20**: de OAuth-flow naar Microsoft werkt van begin tot eind. Scopes terug naar vier,
+  want de drie met `.All` erachter vragen om goedkeuring van een beheerder en houden het bouwen
+  tegen; ze staan met de reden onder "Later nodig" in `server/README.md`. `TokenStore` is nu
+  echt: `store/client.ts` praat met Supabase over PostgREST met `fetch` (geen afhankelijkheid
+  erbij, dus de CI hoeft nog steeds niets te installeren), `store/connections.ts` schrijft en
+  leest `connections` met versleutelde tokens en werkt bij opnieuw koppelen de bestaande rij bij
+  via een upsert op `(user_id, source)`. `store/oauth-state.ts` en de migratie
+  `20260908143000_oauth_state.sql` bewaren `state` en de `code_verifier` tien minuten, eenmalig,
+  en gooien ze daarna meteen weg. Drie endpoints in `http/`: `start`, `callback` en `health`, op
+  `node:http` omdat een framework voor drie GET-routes niets oplevert. De gebruiker komt uit het
+  Supabase-token via `/auth/v1/user`, nooit uit de querystring, en op de callback uit de rij die
+  bij `start` is weggeschreven. `scripts/verify-connection.ts` leest de opgeslagen tokens,
+  ontsleutelt ze en roept Graph aan, wat meteen bewijst dat verversen werkt. 49 tests erbij,
+  109 in totaal, allemaal met een nep-`fetch` en een nep-database. Eén testfout onderweg: de
+  test die controleert dat iemand anders geen koppeling kan kapen stuurde zelf geen sessie mee,
+  waardoor hij de verkeerde foutcode verwachtte.

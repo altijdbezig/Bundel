@@ -31,17 +31,18 @@ import type { SyncFailure } from '../types.ts'
 
 /**
  * De rechten die we vragen. Zo min mogelijk, en allemaal alleen lezen.
- * De uitleg per scope staat in `server/README.md`.
+ *
+ * Deze vier hebben geen goedkeuring van een tenant-beheerder nodig, dus de
+ * hele flow is hiermee te bouwen en te testen zonder dat iemand iets hoeft aan
+ * te zetten. De scopes voor teams, kanalen en berichten zijn er met opzet uit
+ * gehaald: die eindigen op `.All` en vragen wel om goedkeuring. Welke dat zijn
+ * en wanneer ze terugkomen staat in `server/README.md` onder "Later nodig".
+ *
+ * Dit is de enige plek waar de lijst staat. De flow gebruikt hem als
+ * standaardwaarde, dus een aanroep kan er tijdelijk van afwijken zonder dat
+ * hier iets verandert.
  */
-export const SCOPES: readonly string[] = [
-  'openid',
-  'profile',
-  'offline_access',
-  'User.Read',
-  'Team.ReadBasic.All',
-  'Channel.ReadBasic.All',
-  'ChannelMessage.Read.All',
-]
+export const SCOPES: readonly string[] = ['openid', 'profile', 'offline_access', 'User.Read']
 
 export const GRAPH_BASE_URL = 'https://graph.microsoft.com/v1.0'
 
@@ -117,9 +118,13 @@ export function createPkcePair(): PkcePair {
   return { verifier, challenge, method: 'S256' }
 }
 
-/** Losse waarde tegen CSRF op de redirect. Controleer hem bij terugkomst. */
+/**
+ * Losse waarde tegen CSRF op de redirect. Controleer hem bij terugkomst.
+ * 32 bytes, want dit is het enige dat voorkomt dat iemand anders zijn
+ * koppeling aan jouw account hangt.
+ */
 export function createState(): string {
-  return randomBytes(16).toString('base64url')
+  return randomBytes(32).toString('base64url')
 }
 
 export interface AuthorizationRequest {
@@ -245,6 +250,8 @@ async function postToken(
 export interface ExchangeRequest {
   readonly code: string
   readonly codeVerifier: string
+  /** Standaard `SCOPES`. Alleen meegeven als je bewust wilt afwijken. */
+  readonly scopes?: readonly string[]
 }
 
 export interface AuthDeps {
@@ -268,7 +275,7 @@ export function exchangeCode(
       code: request.code,
       redirect_uri: config.redirectUri,
       code_verifier: request.codeVerifier,
-      scope: SCOPES.join(' '),
+      scope: (request.scopes ?? SCOPES).join(' '),
     },
     config,
     resolve(deps),
@@ -280,9 +287,10 @@ export function refreshTokens(
   refreshToken: string,
   config: MicrosoftConfig,
   deps: AuthDeps = {},
+  scopes: readonly string[] = SCOPES,
 ): Promise<TokenResult> {
   return postToken(
-    { grant_type: 'refresh_token', refresh_token: refreshToken, scope: SCOPES.join(' ') },
+    { grant_type: 'refresh_token', refresh_token: refreshToken, scope: scopes.join(' ') },
     config,
     resolve(deps),
   )

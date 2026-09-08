@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "start": "node --env-file=.env src/index.ts",
+    "verify": "node --env-file=.env scripts/verify-connection.ts",
     "test": "node --test \"src/**/*.test.ts\""
   }
 }
