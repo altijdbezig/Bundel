@@ -67,7 +67,6 @@ Bundel/
 ├─ web/         de site en de app        React + Vite, gewone CSS, geen framework
 ├─ server/      de connectorlaag         Node, nul dependencies, OAuth en tokens
 ├─ supabase/    het schema               zeven migraties, RLS op alles
-└─ CLAUDE.md    het projectgeheugen      elke beslissing sinds prompt 1
 ```
 
 Vier lagen, van buiten naar binnen:
